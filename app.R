@@ -16,7 +16,28 @@ library(plotly)
 library(lubridate)
 library(dplyr)
 
-# Read in dataset with relevant columns
+# Read in dataset with relevant columns and rename them
 data <- read.csv(file = "revised.1950-2016_all_tornadoes.csv", header = TRUE)
 headerNames <- c("Date", "Time", "State", "Magnitude", "Injuries", "Fatalities", "Loss","Start Lat","Start Lon","End Lat","End Lon","Length","Width","F1","F2","F3","F4","FC")
 colnames(data) <- headerNames
+
+# Shiny Dashboard
+ui <- dashboardPage(
+  dashboardHeader("Project 3"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+    ) # end sidebarMenu
+  ), # end dashboardSidebar
+  
+  dashboardBody(
+    
+  ) # end dashboardBody
+) # end dashBoardPage
+
+server <- function(input, output) { 
+  
+}
+
+shinyApp(ui, server)
+
