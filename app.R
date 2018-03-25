@@ -21,6 +21,17 @@ data <- read.csv(file = "revised.1950-2016_all_tornadoes.csv", header = TRUE)
 headerNames <- c("Date", "Time", "State", "Magnitude", "Injuries", "Fatalities", "Loss","Start Lat","Start Lon","End Lat","End Lon","Length","Width","F1","F2","F3","F4","FC")
 colnames(data) <- headerNames
 
+#
+# TODO: This following line is not formatting the dates correctly... 
+# e.g. of what it is doing: 1/3/50 --> 2050-01-03
+# Should be 1950-01-03
+#
+# Ensure date column is in date format
+data$Date <- as.Date(data$Date, "%m/%d/%y")
+
+
+
+
 # Shiny Dashboard
 ui <- dashboardPage(
   dashboardHeader("Project 3"),
