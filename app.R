@@ -38,7 +38,7 @@ saveRDS(data, 'data.rds')
 
 # Shiny Dashboard
 ui <- dashboardPage(
-  dashboardHeader("Project 3"),
+  dashboardHeader(title = "Project 3"),
   
   dashboardSidebar(
     sidebarMenu(
@@ -46,12 +46,25 @@ ui <- dashboardPage(
   ), # end dashboardSidebar
   
   dashboardBody(
-    
+    box(
+      title = "Fart", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByYear")
+    )
   ) # end dashboardBody
 ) # end dashBoardPage
 
 server <- function(input, output) { 
-  
+  output$fatalitiesByYear <- DT::renderDataTable({
+    fatYear <- data
+    fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
+    fatYear <- group_by(fatYear, Year)
+    fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
+    fatYear <- mutate(fatYear, Injuries = sum(Injuries))
+    fatYear <- mutate(fatYear, Loss = sum(Loss))
+    fatYear <- select(fatYear, Year, Fatalities, Injuries, Loss)
+    fatYear1 <- distinct(fatYear)
+    
+    DT::datatable(fatYear1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
+  })
 }
 
 shinyApp(ui, server)
