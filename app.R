@@ -48,6 +48,9 @@ ui <- dashboardPage(
   dashboardBody(
     box(
       title = "Fart", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByYear")
+    ),
+    box(
+      title = "Fart", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByMonth")
     )
   ) # end dashboardBody
 ) # end dashBoardPage
@@ -64,6 +67,19 @@ server <- function(input, output) {
     fatYear1 <- distinct(fatYear)
     
     DT::datatable(fatYear1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
+  })
+  
+  output$fatalitiesByMonth <- DT::renderDataTable({
+    fatMonth <- data
+    fatMonth$Month <- format(as.POSIXct(fatMonth$Date, format="%Y-%m-%d"),"%b")
+    fatMonth <- group_by(fatMonth, Month)
+    fatMonth <- mutate(fatMonth, Fatalities = sum(Fatalities))
+    fatMonth <- mutate(fatMonth, Injuries = sum(Injuries))
+    fatMonth <- mutate(fatMonth, Loss = sum(Loss))
+    fatMonth <- select(fatMonth, Month, Fatalities, Injuries, Loss)
+    fatMonth1 <- distinct(fatMonth)
+    
+    DT::datatable(fatMonth1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
   })
 }
 
