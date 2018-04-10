@@ -47,15 +47,21 @@ ui <- dashboardPage(
   
   dashboardBody(
     box(
-      title = "Fart", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByYear")
+      title = "Year", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByYear")
     ),
     box(
-      title = "Fart", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByMonth")
+      title = "Month", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByMonth")
+    ),
+    box(
+      title = "Hour", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByHour")
     )
   ) # end dashboardBody
 ) # end dashBoardPage
 
 server <- function(input, output) { 
+  
+  #TODO Chart
+  #table and chart showing the injuries, fatalities, loss for each year in the records
   output$fatalitiesByYear <- DT::renderDataTable({
     fatYear <- data
     fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
@@ -69,6 +75,8 @@ server <- function(input, output) {
     DT::datatable(fatYear1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
   })
   
+  #TODO Chart
+  #table and chart showing the injuries, fatalities, loss per month summed over all years
   output$fatalitiesByMonth <- DT::renderDataTable({
     fatMonth <- data
     fatMonth$Month <- format(as.POSIXct(fatMonth$Date, format="%Y-%m-%d"),"%b")
@@ -80,6 +88,22 @@ server <- function(input, output) {
     fatMonth1 <- distinct(fatMonth)
     
     DT::datatable(fatMonth1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
+  })
+  
+  #TODO Chart
+  #table and chart showing the injuries, fatalities, loss per hour of the day summed over all years
+  output$fatalitiesByHour <- DT::renderDataTable({
+    fatHour <- data
+    fatHour$Hour <- factor(fatHour$Time)
+    fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
+    fatHour <- group_by(fatHour, Hour)
+    fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
+    fatHour <- mutate(fatHour, Injuries = sum(Injuries))
+    fatHour <- mutate(fatHour, Loss = sum(Loss))
+    fatHour <- select(fatHour, Hour, Fatalities, Injuries, Loss)
+    fatHour1 <- distinct(fatHour)
+    
+    DT::datatable(fatHour1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
   })
 }
 
