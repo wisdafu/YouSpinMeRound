@@ -46,8 +46,13 @@ ui <- dashboardPage(
   ), # end dashboardSidebar
   
   dashboardBody(
+    fluidRow(
     box(
       title = "Year", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByYear")
+    ),
+    box(
+      title = "Year", solidHeader = TRUE, status = "primary", wdith = 6, plotlyOutput("fatalitiesByYearChart")
+    )
     ),
     box(
       title = "Month", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByMonth")
@@ -73,6 +78,23 @@ server <- function(input, output) {
     fatYear1 <- distinct(fatYear)
     
     DT::datatable(fatYear1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
+  })
+  
+  output$fatalitiesByYearChart <- renderPlotly({
+    fatYear <- data
+    fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
+    fatYear <- group_by(fatYear, Year)
+    fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
+    fatYear <- mutate(fatYear, Injuries = sum(Injuries))
+    fatYear <- mutate(fatYear, Loss = sum(Loss))
+    fatYear <- select(fatYear, Year, Fatalities, Injuries, Loss)
+    fatYear1 <- distinct(fatYear)
+    
+    dat <-data.frame(fatYear1$Year, fatYear1$Fatalities, fatYear1$Injuries, fatYear1$Loss)
+    
+    plot_ly(dat,x = ~dat$fatYear1.Year, y = ~dat$fatYear1.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
+           add_trace(y = ~dat$fatYear1.Injuries, name = "Injuries", mode = "lines") %>%
+           add_trace(y = ~dat$fatYear1.Loss, name = "Loss", mode = "lines") 
   })
   
   #TODO Chart
