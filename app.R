@@ -124,10 +124,16 @@ server <- function(input, output) {
       fatMonth <- distinct(fatMonth)
       
       fatMonth$Month <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-      fatMonth <- data.frame(fatMonth$Month, fatMonth$Fatalities)
+      dat <- data.frame(fatMonth$Month, fatMonth$Fatalities)
       
-      finalChart <- plot_ly(fatMonth, x = ~fatMonth.Month, y = ~fatMonth.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
-        layout(xaxis = list(title = "Month", tickangle = 45, categoryorder = "array", categoryarray = c(fatMonth$Month)))
+      
+      
+      finalChart <- plot_ly(dat, x = ~dat$fatMonth.Month, y = ~dat$fatMonth.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Month", 
+                            tickangle = 45, 
+                            categoryorder = "array", 
+                            categoryarray = c(fatMonth$Month)),
+                            yaxis=list(title="Fatalities"))
     }
     
     if(ymhChoice() == "Hourly") {
