@@ -57,7 +57,7 @@ ui <- dashboardPage(
         tabPanel("Map", 
                  fluidRow(
                    box(title = "Map", solidHeader = TRUE, status = "primary", width = 12, leafletOutput("map"))
-                  )
+                 )
         ),
         tabPanel("Charts", 
                  fluidRow(
@@ -128,7 +128,7 @@ server <- function(input, output) {
       
       finalChart <- plot_ly(fatMonth, x = ~fatMonth.Month, y = ~fatMonth.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
         layout(xaxis = list(title = "Month", tickangle = 45, categoryorder = "array", categoryarray = c(fatMonth$Month)))
-      }
+    }
     
     if(ymhChoice() == "Hourly") {
       
@@ -224,13 +224,13 @@ server <- function(input, output) {
     dat <- data.frame(newdt$Hour, newdt$Fatalities, newdt$Injuries, newdt$Loss)
     
     plot_ly(dat, x=~dat$newdt.Hour, y =~dat$newdt.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
-           add_trace(y = ~dat$newdt.Injuries, name ="Injuries", mode = "lines") %>%
-           add_trace(y= ~dat$newdt.Loss, name = "Loss", mode = "lines") %>%
-           layout(xaxis= list(title = "Hour",
-                              tickangle = 45, 
-                              categoryorder = "array", 
-                              categoryarray = c(newdt$Hour)), 
-                              yaxis = list (title = "Fatalities, Injuries, and Loss"))
+      add_trace(y = ~dat$newdt.Injuries, name ="Injuries", mode = "lines") %>%
+      add_trace(y= ~dat$newdt.Loss, name = "Loss", mode = "lines") %>%
+      layout(xaxis= list(title = "Hour",
+                         tickangle = 45, 
+                         categoryorder = "array", 
+                         categoryarray = c(newdt$Hour)), 
+             yaxis = list (title = "Fatalities, Injuries, and Loss"))
     
   })
   
@@ -241,4 +241,3 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
-
