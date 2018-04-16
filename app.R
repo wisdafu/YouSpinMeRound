@@ -51,7 +51,8 @@ ui <- dashboardPage(
       radioButtons('hours', 'Hours:',
                     c('12 Hr' = 24,
                       '24 Hr' = 12)             
-      )
+      ),
+      menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
   
@@ -154,8 +155,6 @@ server <- function(input, output) {
       fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
       fatYear <- group_by(fatYear, Year)
       fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
-      #fatYear <- mutate(fatYear, Injuries = sum(Injuries))
-      #fatYear <- mutate(fatYear, Loss = sum(Loss))
       fatYear <- select(fatYear, Year, Fatalities)
       fatYear <- distinct(fatYear)
       
@@ -230,7 +229,6 @@ server <- function(input, output) {
         fatHour$Hour <- format(strptime(fatHour$Time,"%H:%M:%S"), '%I %p')
       }
       fatHour <- group_by(fatHour, Hour)
-      #fatHour <- mutate(fatHour, Injuries = sum(Injuries))
       fatHour <- mutate(fatHour, Loss = sum(Loss))
       if(hourSetting() == 12){
         fatHour <- fatHour[order(fatHour$Hour),]
@@ -272,7 +270,6 @@ server <- function(input, output) {
       fatYear <- data
       fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
       fatYear <- group_by(fatYear, Year)
-      #fatYear <- mutate(fatYear, Injuries = sum(Injuries))
       fatYear <- mutate(fatYear, Loss = sum(Loss))
       fatYear <- select(fatYear, Year, Loss)
       fatYear <- distinct(fatYear)
@@ -304,6 +301,8 @@ server <- function(input, output) {
       }else{
         fatHour <- fatHour[order(fatHour$Hour24),]
       }
+      newdt <- distinct(fatHour)
+      fatHour <- select(fatHour, Hour, Injuries)
       newdt <- distinct(fatHour)
       
       dat <- data.frame(newdt$Hour, newdt$Injuries)
