@@ -61,12 +61,12 @@ ui <- dashboardPage(
         ),
         tabPanel("Charts", 
                  fluidRow(
-                   box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesByMonthChart"))
+                   box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
                  )
         ),
         tabPanel("Tables", 
                  fluidRow(
-                   box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesByYear"))
+                   box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesTable"))
                  )
         )
       )
@@ -82,7 +82,63 @@ server <- function(input, output) {
   })
   
   #table and chart showing the injuries, fatalities, loss for each year in the records
-  output$fatalitiesByYear <- DT::renderDataTable({
+  output$fatalitiesTable <- DT::renderDataTable({
+    fatYear <- data
+    fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
+    fatYear <- group_by(fatYear, Year)
+    fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
+    fatYear <- mutate(fatYear, Injuries = sum(Injuries))
+    fatYear <- mutate(fatYear, Loss = sum(Loss))
+    fatYear <- select(fatYear, Year, Fatalities, Injuries, Loss)
+    fatYear1 <- distinct(fatYear)
+    
+    DT::datatable(fatYear1, options = list(pageLength = 8, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  output$fatalitiesLineChart <- renderPlotly({
+    
+    # Check which option is chosen
+    if(ymhChoice() == "Yearly") {
+      fatYear <- data
+      fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
+      fatYear <- group_by(fatYear, Year)
+      fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
+      #fatYear <- mutate(fatYear, Injuries = sum(Injuries))
+      #fatYear <- mutate(fatYear, Loss = sum(Loss))
+      fatYear <- select(fatYear, Year, Fatalities)
+      fatYear <- distinct(fatYear)
+      
+      fatYear <- data.frame(fatYear$Year, fatYear$Fatalities)
+      
+      finalChart <- plot_ly(fatYear, x = ~fatYear.Year, y = ~fatYear.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Year", tickangle = 45), yaxis = list (title = "Count"))
+      
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      fatMonth <- data
+      fatMonth$Month <- format(as.POSIXct(fatMonth$Date, format="%Y-%m-%d"),"%b")
+      fatMonth <- group_by(fatMonth, Month)
+      fatMonth <- mutate(fatMonth, Fatalities = sum(Fatalities))
+      fatMonth <- select(fatMonth, Month, Fatalities)
+      fatMonth <- distinct(fatMonth)
+      
+      fatMonth$Month <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+      fatMonth <- data.frame(fatMonth$Month, fatMonth$Fatalities)
+      
+      finalChart <- plot_ly(fatMonth, x = ~fatMonth.Month, y = ~fatMonth.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Month", tickangle = 45, categoryorder = "array", categoryarray = c(fatMonth$Month)))
+      }
+    
+    if(ymhChoice() == "Hourly") {
+      
+    }
+    
+    finalChart
+    
+  })
+  
+  output$lossLineChart <- renderPlotly({
     fatYear <- data
     fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
     fatYear <- group_by(fatYear, Year)
@@ -96,23 +152,7 @@ server <- function(input, output) {
   })
   
   output$fatalitiesByYearChart <- renderPlotly({
-    fatYear <- data
-    fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
-    fatYear <- group_by(fatYear, Year)
-    fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
-    fatYear <- mutate(fatYear, Injuries = sum(Injuries))
-    fatYear <- mutate(fatYear, Loss = sum(Loss))
-    fatYear <- select(fatYear, Year, Fatalities, Injuries, Loss)
-    fatYear1 <- distinct(fatYear)
     
-    dat <-data.frame(fatYear1$Year, fatYear1$Fatalities, fatYear1$Injuries, fatYear1$Loss)
-    
-    plot_ly(dat,x = ~dat$fatYear1.Year, y = ~dat$fatYear1.Fatalities, name = "Fatalities", type = "scatter", mode = "lines") %>%
-           add_trace(y = ~dat$fatYear1.Injuries, name = "Injuries", mode = "lines") %>%
-           add_trace(y = ~dat$fatYear1.Loss, name = "Loss", mode = "lines") %>%
-           layout(xaxis = list(title = "Year",
-                          tickangle = 45),
-             yaxis = list (title = "Count"))
   })
   
   
