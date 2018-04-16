@@ -28,7 +28,7 @@ data$Date <- as.Date(data$Date, "%m/%d/%y")
 # Some dates were converting to dates that haven't happened...
 # Solution is if date is past today, it should be 19XX instead of 20XX
 data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
-
+data <- dplyr::filter(data, data$State == "IL")
 # Save data in RData file
 saveRDS(data, "data.rds")
 
