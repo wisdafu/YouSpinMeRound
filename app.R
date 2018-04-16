@@ -234,9 +234,21 @@ server <- function(input, output) {
     
   })
   
-  # Leaflet map for all deaths
+  # Leaflet map for all tornadoes
+  # Need to add init markers
   output$map <- renderLeaflet({
-    m <- leaflet() %>% addTiles()
+    map1 <- dplyr::filter(data, data$State == 'IL')
+    map2 <- map1
+    map1 <- dplyr::filter(map1, map1$`End Lon` != 0)
+    m <- leaflet::leaflet()
+    m <- leaflet::addTiles(m)
+    for(i in 1:nrow(map1)){
+      m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+    }
+    # Maps the tornado touch down in hopes to counteract
+    # Long and Lat values of 0 which end up in Africa
+    #m <- addMarkers(m, lat = map2$`Start Lat`, lng = map2$`Start Lon`)
+    m
   })
 }
 
