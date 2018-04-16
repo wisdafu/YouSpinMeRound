@@ -138,8 +138,6 @@ server <- function(input, output) {
       fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
       fatYear <- group_by(fatYear, Year)
       fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
-      #fatYear <- mutate(fatYear, Injuries = sum(Injuries))
-      #fatYear <- mutate(fatYear, Loss = sum(Loss))
       fatYear <- select(fatYear, Year, Fatalities)
       fatYear <- distinct(fatYear)
       
@@ -173,8 +171,6 @@ server <- function(input, output) {
       fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
       fatHour <- group_by(fatHour, Hour)
       fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
-      #fatHour <- mutate(fatHour, Injuries = sum(Injuries))
-      #fatHour <- mutate(fatHour, Loss = sum(Loss))
       fatHour <- select(fatHour, Hour, Fatalities)
       fatHour <- distinct(fatHour)
       newdt <- fatHour[order(fatHour$Hour),]
@@ -200,7 +196,6 @@ server <- function(input, output) {
       fatHour$Hour <- factor(fatHour$Time)
       fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
       fatHour <- group_by(fatHour, Hour)
-      #fatHour <- mutate(fatHour, Injuries = sum(Injuries))
       fatHour <- mutate(fatHour, Loss = sum(Loss))
       fatHour <- select(fatHour, Hour, Loss)
       fatHour <- distinct(fatHour)
@@ -238,7 +233,6 @@ server <- function(input, output) {
       fatYear <- data
       fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
       fatYear <- group_by(fatYear, Year)
-      #fatYear <- mutate(fatYear, Injuries = sum(Injuries))
       fatYear <- mutate(fatYear, Loss = sum(Loss))
       fatYear <- select(fatYear, Year, Loss)
       fatYear <- distinct(fatYear)
