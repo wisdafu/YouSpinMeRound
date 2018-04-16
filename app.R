@@ -47,6 +47,10 @@ ui <- dashboardPage(
                    c("Yearly" = "Yearly",
                      "Monthly" = "Monthly",
                      "Hourly" = "Hourly")
+      ),
+      radioButtons('hours', 'Hours:',
+                    c('12 Hr' = 24,
+                      '24 Hr' = 12)             
       )
     ) # end sidebarMenu
   ), # end dashboardSidebar
@@ -87,6 +91,10 @@ server <- function(input, output) {
     input$ymhOption
   })
   
+  hourSetting <- reactive ({
+    input$hours
+  })
+  
   # table showing the injuries, fatalities, loss for each year/month/hour in the records
   output$fatalitiesInjuriesLossTable <- DT::renderDataTable({
     if(ymhChoice() == "Yearly") {
@@ -115,15 +123,24 @@ server <- function(input, output) {
     if(ymhChoice() == "Hourly") {
       fatHour <- data
       fatHour$Hour <- factor(fatHour$Time)
-      fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        fatHour$Hour <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+      }else{
+        fatHour$Hour24 <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+        fatHour$Hour <- format(strptime(fatHour$Time,"%H:%M:%S"), '%I %p')
+      }
       fatHour <- group_by(fatHour, Hour)
       fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
       fatHour <- mutate(fatHour, Injuries = sum(Injuries))
       fatHour <- mutate(fatHour, Loss = sum(Loss))
+      if(hourSetting() == 12){
+        fatHour <- fatHour[order(fatHour$Hour),]
+      }else{
+        fatHour <- fatHour[order(fatHour$Hour24),]
+      }
       fatHour <- select(fatHour, Hour, Fatalities, Injuries, Loss)
       fatHour <- distinct(fatHour)
-      newdt <- fatHour[order(fatHour$Hour),]
-      finalTable <- distinct(newdt)
+      finalTable <- distinct(fatHour)
     }
     
     DT::datatable(finalTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
@@ -169,14 +186,23 @@ server <- function(input, output) {
     if(ymhChoice() == "Hourly") {
       fatHour <- data
       fatHour$Hour <- factor(fatHour$Time)
-      fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        fatHour$Hour <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+      }else{
+        fatHour$Hour24 <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+        fatHour$Hour <- format(strptime(fatHour$Time,"%H:%M:%S"), '%I %p')
+      }
       fatHour <- group_by(fatHour, Hour)
       fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
       #fatHour <- mutate(fatHour, Injuries = sum(Injuries))
       #fatHour <- mutate(fatHour, Loss = sum(Loss))
+      if(hourSetting() == 12){
+        fatHour <- fatHour[order(fatHour$Hour),]
+      }else{
+        fatHour <- fatHour[order(fatHour$Hour24),]
+      }
       fatHour <- select(fatHour, Hour, Fatalities)
-      fatHour <- distinct(fatHour)
-      newdt <- fatHour[order(fatHour$Hour),]
+      newdt <- distinct(fatHour)
       
       dat <- data.frame(newdt$Hour, newdt$Fatalities) #add different parameter here
       
@@ -197,13 +223,22 @@ server <- function(input, output) {
     if(ymhChoice() == "Hourly") {
       fatHour <- data
       fatHour$Hour <- factor(fatHour$Time)
-      fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        fatHour$Hour <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+      }else{
+        fatHour$Hour24 <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+        fatHour$Hour <- format(strptime(fatHour$Time,"%H:%M:%S"), '%I %p')
+      }
       fatHour <- group_by(fatHour, Hour)
       #fatHour <- mutate(fatHour, Injuries = sum(Injuries))
       fatHour <- mutate(fatHour, Loss = sum(Loss))
+      if(hourSetting() == 12){
+        fatHour <- fatHour[order(fatHour$Hour),]
+      }else{
+        fatHour <- fatHour[order(fatHour$Hour24),]
+      }
       fatHour <- select(fatHour, Hour, Loss)
-      fatHour <- distinct(fatHour)
-      newdt <- fatHour[order(fatHour$Hour),]
+      newdt <- distinct(fatHour)
       
       dat <- data.frame(newdt$Hour, newdt$Loss) #add different parameter here
       
@@ -256,11 +291,20 @@ server <- function(input, output) {
     if(ymhChoice() == "Hourly") {
       fatHour <- data
       fatHour$Hour <- factor(fatHour$Time)
-      fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        fatHour$Hour <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+      }else{
+        fatHour$Hour24 <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+        fatHour$Hour <- format(strptime(fatHour$Time,"%H:%M:%S"), '%I %p')
+      }
       fatHour <- group_by(fatHour, Hour)
       fatHour <- mutate(fatHour, Injuries = sum(Injuries))
-      fatHour <- distinct(fatHour)
-      newdt <- fatHour[order(fatHour$Hour),]
+      if(hourSetting() == 12){
+        fatHour <- fatHour[order(fatHour$Hour),]
+      }else{
+        fatHour <- fatHour[order(fatHour$Hour24),]
+      }
+      newdt <- distinct(fatHour)
       
       dat <- data.frame(newdt$Hour, newdt$Injuries)
       
