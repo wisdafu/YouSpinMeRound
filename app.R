@@ -47,7 +47,8 @@ ui <- dashboardPage(
                    c("Yearly" = "Yearly",
                      "Monthly" = "Monthly",
                      "Hourly" = "Hourly")
-      )
+      ),
+      menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
   
@@ -259,6 +260,7 @@ server <- function(input, output) {
       fatHour$Hour <- format(strptime(fatHour$Hour,"%H:%M:%S"),'%H')
       fatHour <- group_by(fatHour, Hour)
       fatHour <- mutate(fatHour, Injuries = sum(Injuries))
+      fatHour <- select(fatHour, Hour, Injuries)
       fatHour <- distinct(fatHour)
       newdt <- fatHour[order(fatHour$Hour),]
       
