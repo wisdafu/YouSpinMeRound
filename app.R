@@ -15,12 +15,12 @@ library(DT)
 library(plotly)
 library(lubridate)
 library(dplyr)
+library(leaflet)
 
 # Read in dataset with relevant columns and rename them
 data <- read.csv(file = "revised.1950-2016_all_tornadoes.csv", header = TRUE)
 headerNames <- c("Date", "Time", "State", "Magnitude", "Injuries", "Fatalities", "Loss","Start Lat","Start Lon","End Lat","End Lon","Length","Width","F1","F2","F3","F4","FC")
 colnames(data) <- headerNames
-
 
 # Ensure date column is in date format
 data$Date <- as.Date(data$Date, "%m/%d/%y")
@@ -30,10 +30,10 @@ data$Date <- as.Date(data$Date, "%m/%d/%y")
 data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
 
 # Save data in RData file
-saveRDS(data, 'data.rds')
+saveRDS(data, "data.rds")
 
 # Example - Load RData file
-# tempData <- readRDS('data.rds')
+# tempData <- readRDS("data.rds")
 
 
 # Shiny Dashboard
@@ -42,38 +42,44 @@ ui <- dashboardPage(
   
   dashboardSidebar(
     sidebarMenu(
+      # Create radio buttons to switch between O'Hare and Midway
+      radioButtons("ymhOption", "View:",
+                   c("Yearly" = "Yearly",
+                     "Monthly" = "Monthly",
+                     "Hourly" = "Hourly")
+      )
     ) # end sidebarMenu
   ), # end dashboardSidebar
   
   dashboardBody(
-    fluidRow(
-      box(
-        title = "Year", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByYear")
-      ),
-      box(
-        title = "Year", solidHeader = TRUE, status = "primary", wdith = 6, plotlyOutput("fatalitiesByYearChart")
-      )
-    ),
-    fluidRow(
-      box(
-        title = "Month", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByMonth")
-      ),
-      box(
-        title = "Month", solidHeader = TRUE, status = "primary", width = 6, plotlyOutput("fatalitiesByMonthChart")
-      )
-    ),
-    fluidRow(
-      box(
-        title = "Hour", solidHeader = TRUE, status = "primary", width = 6, dataTableOutput("fatalitiesByHour")
-      ),
-      box(
-        title = "Hour", solidHeader = TRUE, status = "primary", width = 6, plotlyOutput("fatalitiesByHourChart")
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Map", 
+                 fluidRow(
+                   box(title = "Map", solidHeader = TRUE, status = "primary", width = 12, leafletOutput("map"))
+                  )
+        ),
+        tabPanel("Charts", 
+                 fluidRow(
+                   box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesByMonthChart"))
+                 )
+        ),
+        tabPanel("Tables", 
+                 fluidRow(
+                   box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesByYear"))
+                 )
+        )
       )
     )
   ) # end dashboardBody
 ) # end dashBoardPage
 
 server <- function(input, output) { 
+  
+  # Focus on hourly/monthly/yearly data
+  ymhChoice <- reactive ({
+    input$ymhOption
+  })
   
   #table and chart showing the injuries, fatalities, loss for each year in the records
   output$fatalitiesByYear <- DT::renderDataTable({
@@ -86,7 +92,7 @@ server <- function(input, output) {
     fatYear <- select(fatYear, Year, Fatalities, Injuries, Loss)
     fatYear1 <- distinct(fatYear)
     
-    DT::datatable(fatYear1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
+    DT::datatable(fatYear1, options = list(pageLength = 8, lengthChange = FALSE, searching = FALSE))
   })
   
   output$fatalitiesByYearChart <- renderPlotly({
@@ -106,7 +112,7 @@ server <- function(input, output) {
            add_trace(y = ~dat$fatYear1.Loss, name = "Loss", mode = "lines") %>%
            layout(xaxis = list(title = "Year",
                           tickangle = 45),
-             yaxis = list (title = "Fatalities, Injuries, and Loss"))
+             yaxis = list (title = "Count"))
   })
   
   
@@ -121,7 +127,7 @@ server <- function(input, output) {
     fatMonth <- select(fatMonth, Month, Fatalities, Injuries, Loss)
     fatMonth1 <- distinct(fatMonth)
     
-    DT::datatable(fatMonth1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
+    DT::datatable(fatMonth1, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
   
   output$fatalitiesByMonthChart <- renderPlotly({
@@ -160,7 +166,7 @@ server <- function(input, output) {
     fatHour1 <- distinct(fatHour)
     
     
-    DT::datatable(fatHour1, options = list(pageLength = 8, lengtChange = FALSE, searching = FALSE))
+    DT::datatable(fatHour1, options = list(pageLength = 8, lengthChange = FALSE, searching = FALSE))
   })
   
   output$fatalitiesByHourChart <- renderPlotly({
@@ -181,11 +187,16 @@ server <- function(input, output) {
            add_trace(y = ~dat$newdt.Injuries, name ="Injuries", mode = "lines") %>%
            add_trace(y= ~dat$newdt.Loss, name = "Loss", mode = "lines") %>%
            layout(xaxis= list(title = "Hour",
-                                                      tickangle = 45,
-                                                      categoryorder = "array",
-                                                      categoryarray = c(newdt$Hour)),
-                               yaxis = list (title = "Fatalities, Injuries, and Loss"))
+                              tickangle = 45, 
+                              categoryorder = "array", 
+                              categoryarray = c(newdt$Hour)), 
+                              yaxis = list (title = "Fatalities, Injuries, and Loss"))
     
+  })
+  
+  # Leaflet map for all deaths
+  output$map <- renderLeaflet({
+    m <- leaflet() %>% addTiles()
   })
 }
 
