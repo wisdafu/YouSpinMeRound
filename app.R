@@ -117,8 +117,10 @@ server <- function(input, output) {
       fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
       fatHour <- mutate(fatHour, Injuries = sum(Injuries))
       fatHour <- mutate(fatHour, Loss = sum(Loss))
-      fatHour <- select(fatHour, Hour, Fatalities, Injuries, Loss)
-      finalTable <- distinct(fatHour)
+      fatHour <- select(fatHour, Hour, Fatalities)
+      fatHour <- distinct(fatHour)
+      newdt <- fatHour[order(fatHour$Hour),]
+      finalTable <- distinct(newdt)
     }
     
     DT::datatable(finalTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
