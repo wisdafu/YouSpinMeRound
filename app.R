@@ -148,6 +148,17 @@ server <- function(input, output) {
     DT::datatable(finalTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
   
+  #Magnitude Code
+  #TODO Finish up
+  output$magnitudeByYearTable <- DT::renderDataTable({
+    mag <- data
+    mag$Year <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%Y")
+    mag <- group_by(mag, Year)
+    magTab <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+    
+    DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
   # chart showing the fatalities for each year/month/hour
   output$fatalitiesLineChart <- renderPlotly({
     # Check which option is chosen
@@ -356,9 +367,7 @@ server <- function(input, output) {
   # Leaflet map for all tornadoes
   # Need to add init markers
   output$map <- renderLeaflet({
-    map1 <- dplyr::filter(data, data$State == "IL")
-    map2 <- map1
-    map1 <- dplyr::filter(map1, map1$`End Lon` != 0)
+    map1 <- dplyr::filter(data, data$`End Lon` != 0)
     m <- leaflet::leaflet()
     m <- leaflet::addTiles(m)
     for(i in 1:nrow(map1)){
