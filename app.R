@@ -78,8 +78,9 @@ ui <- dashboardPage(
         ),
         tabPanel("Tables", 
                  fluidRow(
-                   box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable"))
-                 )
+                   box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
+                   box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable"))
+                )
         )
       )
     )
@@ -119,6 +120,7 @@ server <- function(input, output) {
       fatMonth <- mutate(fatMonth, Injuries = sum(Injuries))
       fatMonth <- mutate(fatMonth, Loss = sum(Loss))
       fatMonth <- select(fatMonth, Month, Fatalities, Injuries, Loss)
+      factor(fatMonth$Month, month.abb, ordered=TRUE)
       finalTable <- distinct(fatMonth)
     }
     
@@ -150,11 +152,43 @@ server <- function(input, output) {
   
   #Magnitude Code
   #TODO Finish up
-  output$magnitudeByYearTable <- DT::renderDataTable({
+  output$magnitudeTable <- DT::renderDataTable({
     mag <- data
-    mag$Year <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%Y")
-    mag <- group_by(mag, Year)
-    magTab <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+    
+    if(ymhChoice() == "Yearly"){
+      mag$Year <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%Y")
+      mag <- group_by(mag, Year)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      magTab <- distinct(mag)
+    }
+    
+    if(ymhChoice() == "Monthly"){
+      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
+      mag <- group_by(mag, Month)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      magTab <- distinct(mag)
+    }
+    
+    if(ymhChoice() == "Hourly"){
+      mag <- data
+      mag$Hour <- factor(mag$Time)
+      
+      if(hourSetting() == 12){
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+      }else{
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag$Hour12 <- format(strptime(mag$Time,"%H:%M:%S"), '%I %p')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+        mag$Hour <- format(strptime(mag$Hour, "%H"), '%I %p')
+      }
+      
+      magTab <- distinct(mag)
+    }
     
     DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
