@@ -18,23 +18,7 @@ library(dplyr)
 library(leaflet)
 
 # Read in dataset with relevant columns and rename them
-data <- read.csv(file = "revised.1950-2016_all_tornadoes.csv", header = TRUE)
-fips <- read.csv(file = 'fips.csv', header = TRUE)
-headerNames <- c("Date", "Time", "State", "Magnitude", "Injuries", "Fatalities", "Loss","Start Lat","Start Lon","End Lat","End Lon","Length","Width","F1","F2","F3","F4","FC")
-colnames(data) <- headerNames
 
-# Ensure date column is in date format
-data$Date <- as.Date(data$Date, "%m/%d/%y")
-
-# Some dates were converting to dates that haven't happened...
-# Solution is if date is past today, it should be 19XX instead of 20XX
-data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
-data <- dplyr::filter(data, data$State == "IL")
-# Save data in RData file
-saveRDS(data, "data.rds")
-
-# Example - Load RData file
-# tempData <- readRDS("data.rds")
 
 
 # Shiny Dashboard
@@ -61,6 +45,11 @@ ui <- dashboardPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Map", 
+                 fluidRow(
+                   selectInput("magnitudes", "Magnitude Level:",
+                               c("0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
+                   )
+                 ),
                  fluidRow(
                    box(title = "Map", solidHeader = TRUE, status = "primary", width = 12, leafletOutput("map"))
                  )
@@ -92,6 +81,10 @@ server <- function(input, output) {
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
+  })
+  
+  magnitudeChoice <- reactive ({
+    input$magnitudes
   })
   
   hourSetting <- reactive ({
@@ -401,7 +394,8 @@ server <- function(input, output) {
   # Leaflet map for all tornadoes
   # Need to add init markers
   output$map <- renderLeaflet({
-    map1 <- dplyr::filter(data, data$`End Lon` != 0)
+    print(magnitudeChoice())
+    map1 <- dplyr::filter(data, data$"End Lon" != 0 & data$Magnitude == magnitudeChoice())
     m <- leaflet::leaflet()
     m <- leaflet::addTiles(m)
     for(i in 1:nrow(map1)){
