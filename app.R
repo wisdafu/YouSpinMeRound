@@ -53,6 +53,9 @@ ui <- dashboardPage(
                     c('12 Hr' = 24,
                       '24 Hr' = 12)             
       ),
+      sliderInput("distanceSlider", "Distance From Chicago:",
+                  min = 0.00, max = 1.00,
+                  value = .50, step = 0.001),
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
@@ -79,7 +82,8 @@ ui <- dashboardPage(
         tabPanel("Tables", 
                  fluidRow(
                    box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
-                   box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable"))
+                   box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
+                   box(title = "Distance", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeDistTable"))
                 )
         )
       )
@@ -96,6 +100,10 @@ server <- function(input, output) {
   
   hourSetting <- reactive ({
     input$hours
+  })
+  
+  distanceSlide <- reactive ({
+    input$distanceSlider
   })
   
   # table showing the injuries, fatalities, loss for each year/month/hour in the records
@@ -151,7 +159,6 @@ server <- function(input, output) {
   })
   
   #Magnitude Code
-  #TODO Finish up
   output$magnitudeTable <- DT::renderDataTable({
     mag <- data
     
@@ -189,6 +196,25 @@ server <- function(input, output) {
       
       magTab <- distinct(mag)
     }
+    
+    DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  #Magnitude by distance from chicago
+  output$magnitudeDistTable <- DT::renderDataTable({
+    mag <- data
+    distSlid <- distanceSlide()
+    
+    for(i in 1:nrow(mag)){
+      #Lat +                   #Lon -
+      temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
+      
+      if(temp < distSlid){
+        mag1 <- rbind(mag1, mag[i,])
+      }
+    }
+      
+    magTab <- distinct(mag1)
     
     DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
