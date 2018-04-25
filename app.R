@@ -88,7 +88,8 @@ ui <- dashboardPage(
         tabPanel("Tables", 
                  fluidRow(
                    box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
-                   box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable"))
+                   box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
+                   box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
                 )
         )
       )
@@ -205,6 +206,54 @@ server <- function(input, output) {
     
     DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
+  
+  output$numTornadoTable <- DT::renderDataTable({
+    if(ymhChoice() == "Hourly") {
+      numTor <- data
+      numTor$Hour <- factor(numTor$Time)
+      if(hourSetting() == 12){
+        numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      }else{
+        numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+        numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
+      }
+      numTor <- group_by(numTor, Hour)
+      if(hourSetting() == 12){
+        numTor <- numTor[order(numTor$Hour),]
+      }else{
+        numTor <- numTor[order(numTor$Hour24),]
+      }
+      newdt <- distinct(numTor)
+      newdt <- as.data.frame(table(newdt$Hour))
+      colnames(newdt) <- c("Year","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(newdt)
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      numTor <- data
+      numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
+      numTor$Month <- factor(numTor$Month)
+      numTor <- as.data.frame(table(numTor$Month))
+      colnames(numTor) <- c("Year","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    if(ymhChoice() == "Yearly") {
+      
+      numTor <- data
+      numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
+      numTor$Month <- factor(numTor$Year)
+      numTor <- as.data.frame(table(numTor$Year))
+      colnames(numTor) <- c("Year","Number of Tornados")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    DT::datatable(numTornadoTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
   
   # chart showing the fatalities for each year/month/hour
   output$fatalitiesLineChart <- renderPlotly({
