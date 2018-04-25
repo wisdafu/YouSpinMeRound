@@ -18,7 +18,24 @@ library(dplyr)
 library(leaflet)
 
 # Read in dataset with relevant columns and rename them
+data <- read.csv(file = "revised.1950-2016_all_tornadoes.csv", header = TRUE)
+fips <- read.csv(file = 'fips.csv', header = TRUE)
+headerNames <- c("Date", "Time", "State", "Magnitude", "Injuries", "Fatalities", "Loss","Start Lat","Start Lon","End Lat","End Lon","Length","Width","F1","F2","F3","F4","FC")
+colnames(data) <- headerNames
 
+# Ensure date column is in date format
+data$Date <- as.Date(data$Date, "%m/%d/%y")
+
+# Some dates were converting to dates that haven't happened...
+# Solution is if date is past today, it should be 19XX instead of 20XX
+data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
+data <- dplyr::filter(data, data$State == "IL")
+
+# Save data in RData file
+saveRDS(data, "data.rds")
+
+# Example - Load RData file
+# tempData <- readRDS("data.rds")
 
 
 # Shiny Dashboard
@@ -47,7 +64,7 @@ ui <- dashboardPage(
         tabPanel("Map", 
                  fluidRow(
                    selectInput("magnitudes", "Magnitude Level:",
-                               c("0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
+                               c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
                    )
                  ),
                  fluidRow(
@@ -394,13 +411,24 @@ server <- function(input, output) {
   # Leaflet map for all tornadoes
   # Need to add init markers
   output$map <- renderLeaflet({
-    print(magnitudeChoice())
-    map1 <- dplyr::filter(data, data$"End Lon" != 0 & data$Magnitude == magnitudeChoice())
-    m <- leaflet::leaflet()
-    m <- leaflet::addTiles(m)
-    for(i in 1:nrow(map1)){
-      m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+    
+    # -1 means show all tornadoes
+    if (magnitudeChoice() == -1){
+      map1 <- dplyr::filter(data, data$"End Lon" != 0)
+      m <- leaflet::leaflet()
+      m <- leaflet::addTiles(m)
+      for(i in 1:nrow(map1)){
+        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+      }
+    } else {
+      map1 <- dplyr::filter(data, data$"End Lon" != 0 & data$Magnitude == magnitudeChoice())
+      m <- leaflet::leaflet()
+      m <- leaflet::addTiles(m)
+      for(i in 1:nrow(map1)){
+        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+      }
     }
+   
     # Maps the tornado touch down in hopes to counteract
     # Long and Lat values of 0 which end up in Africa
     #m <- addMarkers(m, lat = map2$`Start Lat`, lng = map2$`Start Lon`)
