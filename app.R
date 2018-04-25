@@ -80,6 +80,9 @@ ui <- dashboardPage(
                  ),
                  fluidRow(
                    box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
+                 ),
+                 fluidRow(
+                   box(title = "Number of Tornados", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
                  )
         ),
         tabPanel("Tables", 
@@ -406,6 +409,66 @@ server <- function(input, output) {
     finalChart
   })
   
+  output$numTornadoLineChart <- renderPlotly({
+    if(ymhChoice() == "Hourly") {
+      numTor <- data
+      numTor$Hour <- factor(numTor$Time)
+      if(hourSetting() == 12){
+        numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      }else{
+        numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+        numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
+      }
+      numTor <- group_by(numTor, Hour)
+      if(hourSetting() == 12){
+        numTor <- numTor[order(numTor$Hour),]
+      }else{
+        numTor <- numTor[order(numTor$Hour24),]
+      }
+      newdt <- distinct(numTor)
+      newdt <- as.data.frame(table(newdt$Hour))
+      
+      dat <- data.frame(newdt)
+      
+      finalChart <- plot_ly(dat, x=~dat$Var1, y =~dat$Freq, name = "Number of Tornados", type = "scatter", mode = "lines") %>%
+        layout(xaxis= list(title = "Hour",
+                           tickangle = 45, 
+                           categoryorder = "array", 
+                           categoryarray = c(newdt$Hour)), 
+               yaxis = list (title = "Count"))
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      numTor <- data
+      numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
+      numTor$Month <- factor(numTor$Month)
+      numTor <- as.data.frame(table(numTor$Month))
+      
+      dat <- data.frame(numTor)
+      
+      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornados", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Month", 
+                            tickangle = 45, 
+                            categoryorder = "array", 
+                            categoryarray = c(numTor$Month)),
+               yaxis=list(title="Count"))
+    }
+    
+    if(ymhChoice() == "Yearly") {
+     
+      numTor <- data
+      numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
+      numTor$Month <- factor(numTor$Year)
+      numTor <- as.data.frame(table(numTor$Year))
+      
+      dat <- data.frame(numTor)
+      
+      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Loss", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Year", tickangle = 45), yaxis = list (title = "Count"))
+    }
+    
+    finalChart
+  })
 
   
   # Leaflet map for all tornadoes
