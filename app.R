@@ -30,6 +30,7 @@ data$Date <- as.Date(data$Date, "%m/%d/%y")
 # Solution is if date is past today, it should be 19XX instead of 20XX
 data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
 data <- dplyr::filter(data, data$State == "IL")
+
 # Save data in RData file
 saveRDS(data, "data.rds")
 
@@ -50,42 +51,45 @@ ui <- dashboardPage(
                      "Hourly" = "Hourly")
       ),
       radioButtons('hours', 'Hours:',
-                    c('12 Hr' = 24,
-                      '24 Hr' = 12)             
+                   c('12 Hr' = 24,
+                     '24 Hr' = 12)             
       ),
-      sliderInput("distanceSlider", "Distance From Chicago:",
-                  min = 0.00, max = 1.00,
-                  value = .50, step = 0.001),
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
   
   dashboardBody(
-    mainPanel(
-      tabsetPanel(
-        tabPanel("Map", 
-                 fluidRow(
-                   box(title = "Map", solidHeader = TRUE, status = "primary", width = 12, leafletOutput("map"))
-                 )
-        ),
-        tabPanel("Charts", 
-                 fluidRow(
-                   box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
-                 ),
-                 fluidRow(
-                   box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart"))
-                 ),
-                 fluidRow(
-                   box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
-                 )
-        ),
-        tabPanel("Tables", 
-                 fluidRow(
-                   box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
-                   box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
-                   box(title = "Distance", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeDistTable"))
-                )
-        )
+    tabsetPanel(
+      tabPanel("Map", 
+               column(width = 9, style = "border: 1px solid black",
+                      leafletOutput("map", height = 500)
+               ),
+               column(width = 3, align = "center",
+                      selectInput("magnitudes", "Magnitude Level:",
+                                  c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
+                      )
+               )
+      ),
+      tabPanel("Charts", 
+               fluidRow(
+                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
+               ),
+               fluidRow(
+                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart"))
+               ),
+               fluidRow(
+                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
+               ),
+               fluidRow(
+                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
+               )
+      ),
+      tabPanel("Tables", 
+               fluidRow(
+                 box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
+                 box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
+                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
+               )
       )
     )
   ) # end dashboardBody
@@ -98,12 +102,12 @@ server <- function(input, output) {
     input$ymhOption
   })
   
-  hourSetting <- reactive ({
-    input$hours
+  magnitudeChoice <- reactive ({
+    input$magnitudes
   })
   
-  distanceSlide <- reactive ({
-    input$distanceSlider
+  hourSetting <- reactive ({
+    input$hours
   })
   
   # table showing the injuries, fatalities, loss for each year/month/hour in the records
@@ -159,6 +163,7 @@ server <- function(input, output) {
   })
   
   #Magnitude Code
+  #TODO Finish up
   output$magnitudeTable <- DT::renderDataTable({
     mag <- data
     
@@ -200,24 +205,52 @@ server <- function(input, output) {
     DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
   
-  #Magnitude by distance from chicago
-  output$magnitudeDistTable <- DT::renderDataTable({
-    mag <- data
-    distSlid <- distanceSlide()
-    
-    for(i in 1:nrow(mag)){
-      #Lat +                   #Lon -
-      temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
-      
-      if(temp < distSlid){
-        mag1 <- rbind(mag1, mag[i,])
+  output$numTornadoTable <- DT::renderDataTable({
+    if(ymhChoice() == "Hourly") {
+      numTor <- data
+      numTor$Hour <- factor(numTor$Time)
+      numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      }else{
+        numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
       }
-    }
+      numTor <- group_by(numTor, Hour)
+      numTor <- as.data.frame(table(numTor$Hour24))
+      if(hourSetting() == 12){
+        numTor <- numTor[order(numTor$Var1),]
+      }else{
+        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+      }
+      colnames(numTor) <- c("Hour","Number of Tornadoes")
       
-    magTab <- distinct(mag1)
+      numTornadoTable <- distinct(numTor)
+    }
     
-    DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+    if(ymhChoice() == "Monthly") {
+      numTor <- data
+      numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
+      numTor$Month <- factor(numTor$Month)
+      numTor <- as.data.frame(table(numTor$Month))
+      colnames(numTor) <- c("Month","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    if(ymhChoice() == "Yearly") {
+      
+      numTor <- data
+      numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
+      numTor$Month <- factor(numTor$Year)
+      numTor <- as.data.frame(table(numTor$Year))
+      colnames(numTor) <- c("Year","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    DT::datatable(numTornadoTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
+  
   
   # chart showing the fatalities for each year/month/hour
   output$fatalitiesLineChart <- renderPlotly({
@@ -251,7 +284,7 @@ server <- function(input, output) {
                             tickangle = 45, 
                             categoryorder = "array", 
                             categoryarray = c(fatMonth$Month)),
-                            yaxis=list(title="Fatalities"))
+               yaxis=list(title="Fatalities"))
     }
     
     if(ymhChoice() == "Hourly") {
@@ -422,17 +455,96 @@ server <- function(input, output) {
     finalChart
   })
   
-
+  output$numTornadoLineChart <- renderPlotly({
+    if(ymhChoice() == "Hourly") {
+      numTor <- data
+      numTor$Hour <- factor(numTor$Time)
+      numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      }else{
+        numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
+      }
+      numTor <- group_by(numTor, Hour)
+      numTor <- as.data.frame(table(numTor$Hour24))
+      if(hourSetting() == 12){
+        numTor <- numTor[order(numTor$Var1),]
+      }else{
+        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+      }
+      
+      dat <- data.frame(numTor)
+      
+      if(hourSetting()==12)
+      {
+        finalChart <- plot_ly(dat, x=~dat$Var1, y =~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+          layout(xaxis= list(title = "Hour", tickangle = 45), 
+                 yaxis = list (title = "Count"))
+        
+      }else{
+        finalChart <- plot_ly(dat, x=~dat$Var1, y =~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+          layout(xaxis= list(title = "Hour",
+                             tickangle = 45, 
+                             categoryorder = "array", 
+                             categoryarray = c(numTor$Var1)), 
+                 yaxis = list (title = "Count"))
+      }
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      numTor <- data
+      numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
+      numTor$Month <- factor(numTor$Month)
+      numTor <- as.data.frame(table(numTor$Month))
+      
+      dat <- data.frame(numTor)
+      
+      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Month", 
+                            tickangle = 45, 
+                            categoryorder = "array", 
+                            categoryarray = c(numTor$Month)),
+               yaxis=list(title="Count"))
+    }
+    
+    if(ymhChoice() == "Yearly") {
+      
+      numTor <- data
+      numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
+      numTor$Month <- factor(numTor$Year)
+      numTor <- as.data.frame(table(numTor$Year))
+      
+      dat <- data.frame(numTor)
+      
+      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Year", tickangle = 45), yaxis = list (title = "Count"))
+    }
+    
+    finalChart
+  })
+  
   
   # Leaflet map for all tornadoes
   # Need to add init markers
   output$map <- renderLeaflet({
-    map1 <- dplyr::filter(data, data$`End Lon` != 0)
-    m <- leaflet::leaflet()
-    m <- leaflet::addTiles(m)
-    for(i in 1:nrow(map1)){
-      m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+    
+    # -1 means show all tornadoes
+    if (magnitudeChoice() == -1){
+      map1 <- dplyr::filter(data, data$"End Lon" != 0)
+      m <- leaflet::leaflet()
+      m <- leaflet::addTiles(m)
+      for(i in 1:nrow(map1)){
+        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+      }
+    } else {
+      map1 <- dplyr::filter(data, data$"End Lon" != 0 & data$Magnitude == magnitudeChoice())
+      m <- leaflet::leaflet()
+      m <- leaflet::addTiles(m)
+      for(i in 1:nrow(map1)){
+        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+      }
     }
+    
     # Maps the tornado touch down in hopes to counteract
     # Long and Lat values of 0 which end up in Africa
     #m <- addMarkers(m, lat = map2$`Start Lat`, lng = map2$`Start Lon`)
