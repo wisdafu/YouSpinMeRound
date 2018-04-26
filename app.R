@@ -81,14 +81,14 @@ ui <- dashboardPage(
                    box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
                  ),
                  fluidRow(
-                   box(title = "Number of Tornados", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
+                   box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
                  )
         ),
         tabPanel("Tables", 
                  fluidRow(
                    box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                    box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
-                   box(title = "Number of Tornados", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
+                   box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
                  )
         )
       )
@@ -244,7 +244,7 @@ server <- function(input, output) {
       numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
       numTor$Month <- factor(numTor$Year)
       numTor <- as.data.frame(table(numTor$Year))
-      colnames(numTor) <- c("Year","Number of Tornados")
+      colnames(numTor) <- c("Year","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
     }
@@ -477,7 +477,7 @@ server <- function(input, output) {
       
       dat <- data.frame(newdt)
       
-      finalChart <- plot_ly(dat, x=~dat$Var1, y =~dat$Freq, name = "Number of Tornados", type = "scatter", mode = "lines") %>%
+      finalChart <- plot_ly(dat, x=~dat$Var1, y =~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis= list(title = "Hour",
                            tickangle = 45, 
                            categoryorder = "array", 
@@ -493,7 +493,7 @@ server <- function(input, output) {
       
       dat <- data.frame(numTor)
       
-      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornados", type = "scatter", mode = "lines") %>%
+      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis = list(title = "Month", 
                             tickangle = 45, 
                             categoryorder = "array", 
@@ -510,7 +510,7 @@ server <- function(input, output) {
       
       dat <- data.frame(numTor)
       
-      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Loss", type = "scatter", mode = "lines") %>%
+      finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis = list(title = "Year", tickangle = 45), yaxis = list (title = "Count"))
     }
     
