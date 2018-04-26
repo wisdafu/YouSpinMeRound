@@ -209,23 +209,22 @@ server <- function(input, output) {
     if(ymhChoice() == "Hourly") {
       numTor <- data
       numTor$Hour <- factor(numTor$Time)
+      numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
       if(hourSetting() == 12){
         numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
       }else{
-        numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
         numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
       }
       numTor <- group_by(numTor, Hour)
+      numTor <- as.data.frame(table(numTor$Hour24))
       if(hourSetting() == 12){
-        numTor <- numTor[order(numTor$Hour),]
+        numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor <- numTor[order(numTor$Hour24),]
+        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
       }
-      newdt <- distinct(numTor)
-      newdt <- as.data.frame(table(newdt$Hour))
-      colnames(newdt) <- c("Year","Number of Tornadoes")
+      colnames(numTor) <- c("Hour","Number of Tornadoes")
       
-      numTornadoTable <- distinct(newdt)
+      numTornadoTable <- distinct(numTor)
     }
     
     if(ymhChoice() == "Monthly") {
@@ -233,7 +232,7 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
-      colnames(numTor) <- c("Year","Number of Tornadoes")
+      colnames(numTor) <- c("Month","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
     }
@@ -460,29 +459,36 @@ server <- function(input, output) {
     if(ymhChoice() == "Hourly") {
       numTor <- data
       numTor$Hour <- factor(numTor$Time)
+      numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
       if(hourSetting() == 12){
         numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
       }else{
-        numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
         numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
       }
       numTor <- group_by(numTor, Hour)
+      numTor <- as.data.frame(table(numTor$Hour24))
       if(hourSetting() == 12){
-        numTor <- numTor[order(numTor$Hour),]
+        numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor <- numTor[order(numTor$Hour24),]
+        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
       }
-      newdt <- distinct(numTor)
-      newdt <- as.data.frame(table(newdt$Hour))
       
-      dat <- data.frame(newdt)
+      dat <- data.frame(numTor)
       
+      if(hourSetting()==12)
+      {
+        finalChart <- plot_ly(dat, x=~dat$Var1, y =~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+               layout(xaxis= list(title = "Hour", tickangle = 45), 
+                                   yaxis = list (title = "Count"))
+        
+      }else{
       finalChart <- plot_ly(dat, x=~dat$Var1, y =~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis= list(title = "Hour",
                            tickangle = 45, 
                            categoryorder = "array", 
-                           categoryarray = c(newdt$Hour)), 
+                           categoryarray = c(numTor$Var1)), 
                yaxis = list (title = "Count"))
+      }
     }
     
     if(ymhChoice() == "Monthly") {
