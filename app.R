@@ -51,25 +51,24 @@ ui <- dashboardPage(
                      "Hourly" = "Hourly")
       ),
       radioButtons('hours', 'Hours:',
-                    c('12 Hr' = 24,
-                      '24 Hr' = 12)             
+                   c('12 Hr' = 24,
+                     '24 Hr' = 12)             
       ),
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
   
   dashboardBody(
-    mainPanel(
-      tabsetPanel(
-        tabPanel("Map", 
-                 fluidRow(
-                   selectInput("magnitudes", "Magnitude Level:",
-                               c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
-                   )
-                 ),
-                 fluidRow(
-                   box(title = "Map", solidHeader = TRUE, status = "primary", width = 12, leafletOutput("map"))
-                 )
+    tabsetPanel(
+      tabPanel("Map", 
+               column(width = 9, style = "border: 1px solid black",
+                      leafletOutput("map", height = 500)
+                ),
+               column(width = 3, align = "center",
+                      selectInput("magnitudes", "Magnitude Level:",
+                                  c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
+                      )
+               )
         ),
         tabPanel("Charts", 
                  fluidRow(
@@ -90,10 +89,9 @@ ui <- dashboardPage(
                    box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                    box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
                    box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
-                )
+                 )
         )
       )
-    )
   ) # end dashboardBody
 ) # end dashBoardPage
 
@@ -287,7 +285,7 @@ server <- function(input, output) {
                             tickangle = 45, 
                             categoryorder = "array", 
                             categoryarray = c(fatMonth$Month)),
-                            yaxis=list(title="Fatalities"))
+               yaxis=list(title="Fatalities"))
     }
     
     if(ymhChoice() == "Hourly") {
@@ -504,7 +502,7 @@ server <- function(input, output) {
     }
     
     if(ymhChoice() == "Yearly") {
-     
+      
       numTor <- data
       numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
       numTor$Month <- factor(numTor$Year)
@@ -518,7 +516,7 @@ server <- function(input, output) {
     
     finalChart
   })
-
+  
   
   # Leaflet map for all tornadoes
   # Need to add init markers
@@ -540,7 +538,7 @@ server <- function(input, output) {
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
     }
-   
+    
     # Maps the tornado touch down in hopes to counteract
     # Long and Lat values of 0 which end up in Africa
     #m <- addMarkers(m, lat = map2$`Start Lat`, lng = map2$`Start Lon`)
