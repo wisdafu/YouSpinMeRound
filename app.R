@@ -88,7 +88,7 @@ ui <- dashboardPage(
                  fluidRow(
                    box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                    box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
-                   box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
+                   box(title = "Number of Tornados", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
                  )
         )
       )
