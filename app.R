@@ -136,13 +136,10 @@ server <- function(input, output) {
   
   # Values for min/max for Length
   minWidth <- reactive ({
-    print(input$minWidth)
     as.numeric(input$minWidth)
   })
   
   maxWidth <- reactive ({
-    print(input$maxWidth)
-    
     as.numeric(input$maxWidth)
   })
   
@@ -153,6 +150,22 @@ server <- function(input, output) {
   
   maxLength <- reactive ({
     as.numeric(input$maxLength)
+  })
+  
+  minFatal <- reactive ({
+    input$injuries[1]
+  })
+  
+  maxFatal <- reactive ({
+    input$injuries[2]
+  })
+  
+  minInjury <- reactive ({
+    input$fatalities[1]
+  })
+  
+  maxInjury <- reactive ({
+    input$fatalities[2]
   })
   
   magnitudeChoice <- reactive ({
@@ -613,20 +626,31 @@ server <- function(input, output) {
     
     # -1 means show all tornadoes
     if (magnitudeChoice() == -1){
-      map1 <- dplyr::filter(data, data$"End Lon" != 0)
+      map1 <- dplyr::filter(data, data$"End Lon" != 0 &
+                              data$Length >= minLength() & data$Length <= maxLength() &
+                              data$Width >= minWidth() & data$Width <= maxWidth() &
+                              data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
     } else {
-      map1 <- dplyr::filter(data, data$"End Lon" != 0 & data$Magnitude == magnitudeChoice())
+      map1 <- dplyr::filter(data, data$"End Lon" != 0 & 
+                              data$Magnitude == magnitudeChoice() &
+                              data$Length >= minLength() & data$Length <= maxLength() &
+                              data$Width >= minWidth() & data$Width <= maxWidth() & 
+                              data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
     }
+    
+    
     
     # Maps the tornado touch down in hopes to counteract
     # Long and Lat values of 0 which end up in Africa
