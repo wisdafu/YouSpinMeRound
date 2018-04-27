@@ -61,14 +61,48 @@ ui <- dashboardPage(
   dashboardBody(
     tabsetPanel(
       tabPanel("Map", 
-               column(width = 9, style = "border: 1px solid black",
-                      leafletOutput("map", height = 500)
-               ),
-               column(width = 3, align = "center",
-                      selectInput("magnitudes", "Magnitude Level:",
-                                  c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
-                      )
-               )
+               fluidRow(
+                 column(width = 12, 
+                        box(title = "Map", width = NULL, solidHeader = TRUE, status = "primary",
+                            leafletOutput("map", height = 500))
+               )),
+               fluidRow(
+                 h1("Filters", align = "center"),
+                 column(width = 4, align = "center",
+                               h4("Magnitude"),
+                               selectInput("magnitudes", "",
+                                           c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
+                               ),h4("Width (yd)"),
+                               splitLayout(numericInput("minWidth", label = "min", value = 1),
+                                           numericInput("maxWidth", label = "max", value = 2)),
+                               h4("Length (mi)"),
+                               splitLayout(numericInput("minLength", label = "min", value = 1),
+                                           numericInput("maxLength", label = "max", value = 2))
+                               ),
+                        column(width = 4, align = "center",
+                               h4("Loss"),
+                               selectInput("loss", "",
+                                           c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),
+                               h4("Injuries"),
+                               sliderInput("injuries", "",step = 5,
+                                           min = 0, max = 500,
+                                           value = c(0,500)),
+                               h4("Fatalities"),
+                               sliderInput("injuries", "",step = 1,
+                                           min = 0, max = 33,
+                                           value = c(0,33))
+                        ),
+                        column(width = 4, align = "center",
+                               h4("Magnitude"),
+                               selectInput("magnitudes", "",
+                                           c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
+                               ),h4("Width"),
+                               splitLayout(numericInput("minWidth", label = "min", value = 1),
+                                           numericInput("maxWidth", label = "max", value = 2)),
+                               h4("Length"),
+                               splitLayout(numericInput("minLength", label = "min", value = 1),
+                                           numericInput("maxLength", label = "max", value = 2))
+                        ))
       ),
       tabPanel("Charts", 
                fluidRow(
@@ -100,6 +134,11 @@ server <- function(input, output) {
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
+  })
+  
+  range <- reactive ({
+    paste(input$range, collapse = " ")
+    print(input$range)
   })
   
   magnitudeChoice <- reactive ({
