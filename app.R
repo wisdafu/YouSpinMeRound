@@ -569,7 +569,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       
       dat <- data.frame(numTor)
@@ -688,7 +688,7 @@ server <- function(input, output) {
           add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
           add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
           layout(xaxis=list(title = "Hour", tickangle =45, categoryorder = "array", 
-                            categoryarray = c(dat$Month)), yaxis = list (title = "Magnitude"))
+                            categoryarray = c(mag$Hour)), yaxis = list (title = "Magnitude"))
         
       }
       
