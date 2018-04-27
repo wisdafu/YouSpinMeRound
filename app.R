@@ -68,40 +68,38 @@ ui <- dashboardPage(
                )),
                fluidRow(
                  h1("Filters", align = "center"),
+                  
                  column(width = 4, align = "center",
-                               h4("Magnitude"),
-                               selectInput("magnitudes", "",
-                                           c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
-                               ),h4("Width (yd)"),
-                               splitLayout(numericInput("minWidth", label = "min", value = 1),
-                                           numericInput("maxWidth", label = "max", value = 2)),
-                               h4("Length (mi)"),
-                               splitLayout(numericInput("minLength", label = "min", value = 1),
-                                           numericInput("maxLength", label = "max", value = 2))
+                        
+                        h4("Magnitude"),
+                               selectInput("magnitudeLvl", "",
+                                c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),
+                        h4("Width (yd)"),
+                               splitLayout(numericInput("minWidth", label = "min", value = 0, min = 0, max = 2630),
+                                           numericInput("maxWidth", label = "max", value = 2630, min = 0, max = 2630)),
+                        h4("Length (mi)"),
+                               splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 157),
+                                           numericInput("maxLength", label = "max", value = 157, min = 0, max = 157))
                                ),
-                        column(width = 4, align = "center",
+                        
+                 column(width = 4, align = "center",
                                h4("Loss"),
                                selectInput("loss", "",
-                                           c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),
+                                           c("Lorem" ,"Ipsum")),
                                h4("Injuries"),
                                sliderInput("injuries", "",step = 5,
                                            min = 0, max = 500,
                                            value = c(0,500)),
                                h4("Fatalities"),
-                               sliderInput("injuries", "",step = 1,
+                               sliderInput("fatalities", "",step = 1,
                                            min = 0, max = 33,
                                            value = c(0,33))
                         ),
-                        column(width = 4, align = "center",
-                               h4("Magnitude"),
-                               selectInput("magnitudes", "",
-                                           c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)
-                               ),h4("Width"),
-                               splitLayout(numericInput("minWidth", label = "min", value = 1),
-                                           numericInput("maxWidth", label = "max", value = 2)),
-                               h4("Length"),
-                               splitLayout(numericInput("minLength", label = "min", value = 1),
-                                           numericInput("maxLength", label = "max", value = 2))
+                        
+                 column(width = 4, align = "center",
+                        
+                        h4("Stats:"),
+                        tableOutput("statsTable")
                         ))
       ),
       tabPanel("Charts", 
@@ -136,17 +134,63 @@ server <- function(input, output) {
     input$ymhOption
   })
   
-  range <- reactive ({
-    paste(input$range, collapse = " ")
-    print(input$range)
+  # Values for min/max for Length
+  minWidth <- reactive ({
+    print(input$minWidth)
+    as.numeric(input$minWidth)
+  })
+  
+  maxWidth <- reactive ({
+    print(input$maxWidth)
+    
+    as.numeric(input$maxWidth)
+  })
+  
+  # Values for min/max for Length
+  minLength <- reactive ({
+    as.numeric(input$minLength)
+  })
+  
+  maxLength <- reactive ({
+    as.numeric(input$maxLength)
   })
   
   magnitudeChoice <- reactive ({
-    input$magnitudes
+    input$magnitudeLvl
   })
   
   hourSetting <- reactive ({
     input$hours
+  })
+  
+  # Renders table output that shows some key stats
+  statsValuesForTable <- reactive({
+    data.frame(
+      Variable = c("Min Width",
+                   "Max Width",
+                   "Min Length",
+                   "Max Length",
+                   "Min Injuries",
+                   "Max Injuries",
+                   "Min Fatalities",
+                   "Max Fatalities"
+      ),
+      
+      Value = as.character(c(
+        input$minWidth,
+        input$maxWidth,
+        input$minLength,
+        input$maxLength,
+        input$injuries[1],
+        input$injuries[2],
+        input$fatalities[1],
+        input$fatalities[2]
+      )), stringsAsFactors = FALSE)
+    
+  })
+  
+  output$statsTable <- renderTable({
+    statsValuesForTable()
   })
   
   # table showing the injuries, fatalities, loss for each year/month/hour in the records
