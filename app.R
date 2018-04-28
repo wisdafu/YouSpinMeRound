@@ -651,7 +651,6 @@ server <- function(input, output) {
     }
     
     
-    
     # Maps the tornado touch down in hopes to counteract
     # Long and Lat values of 0 which end up in Africa
     #m <- addMarkers(m, lat = map2$`Start Lat`, lng = map2$`Start Lon`)
