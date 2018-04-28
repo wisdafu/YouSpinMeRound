@@ -114,6 +114,9 @@ ui <- dashboardPage(
                ),
                fluidRow(
                  box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
+               ),
+               fluidRow(
+                 box(title = "Number of Tornadoes with Magnitude", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("magTornadoLineChart"))
                )
       ),
       tabPanel("Tables", 
@@ -566,7 +569,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       
       dat <- data.frame(numTor)
@@ -614,6 +617,82 @@ server <- function(input, output) {
       
       finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis = list(title = "Year", tickangle = 45), yaxis = list (title = "Count"))
+    }
+    
+    finalChart
+  })
+  
+  output$magTornadoLineChart <- renderPlotly({
+    mag <- data
+    if(ymhChoice() == "Yearly"){
+      mag$Year <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%Y")
+      mag <- group_by(mag, Year)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      dat <- data.frame(mag)
+      
+      finalChart <- plot_ly(dat, x=~dat$Year, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
+        add_trace(y = ~dat$M2, name = "Magnitude 2") %>%
+        add_trace(y = ~dat$M3, name = "Magnitude 3") %>%
+        add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
+        add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
+        add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
+        layout(xaxis=list(title = "Year", tickangle =45), yaxis = list (title = "Magnitude"))
+    }
+    
+    if(ymhChoice() == "Monthly"){
+      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
+      mag <- group_by(mag, Month)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      dat <- data.frame(mag)
+      
+      finalChart <- plot_ly(dat, x=~dat$Month, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
+        add_trace(y = ~dat$M2, name = "Magnitude 2") %>%
+        add_trace(y = ~dat$M3, name = "Magnitude 3") %>%
+        add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
+        add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
+        add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
+        layout(xaxis=list(title = "Month", tickangle =45), yaxis = list (title = "Magnitude"))
+    }
+    
+    if(ymhChoice() == "Hourly"){
+      mag <- data
+      mag$Hour <- factor(mag$Time)
+      
+      if(hourSetting() == 12){
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+        dat <- data.frame(mag)
+        finalChart <- plot_ly(dat, x=~dat$Hour, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
+          add_trace(y = ~dat$M2, name = "Magnitude 2") %>%
+          add_trace(y = ~dat$M3, name = "Magnitude 3") %>%
+          add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
+          add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
+          add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
+          layout(xaxis=list(title = "Hour", tickangle =45), yaxis = list (title = "Magnitude"))
+        
+      }else{
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag$Hour12 <- format(strptime(mag$Time,"%H:%M:%S"), '%I %p')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+        mag$Hour <- format(strptime(mag$Hour, "%H"), '%I %p')
+        dat <- data.frame(mag)
+       
+         finalChart <- plot_ly(dat, x=~dat$Hour, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
+          add_trace(y = ~dat$M2, name = "Magnitude 2") %>%
+          add_trace(y = ~dat$M3, name = "Magnitude 3") %>%
+          add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
+          add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
+          add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
+          layout(xaxis=list(title = "Hour", tickangle =45, categoryorder = "array", 
+                            categoryarray = c(mag$Hour)), yaxis = list (title = "Magnitude"))
+        
+      }
+      
+      magTab <- distinct(mag)
     }
     
     finalChart
