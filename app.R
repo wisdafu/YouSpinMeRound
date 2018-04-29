@@ -115,6 +115,10 @@ ui <- dashboardPage(
                    c('12 Hr' = 24,
                      '24 Hr' = 12)             
       ),
+      radioButtons('Measurments', 'Measurements:',
+                   c('Imperial' = 1,
+                     'Metric' = 0)             
+      ),
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
