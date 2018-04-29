@@ -36,6 +36,63 @@ data$Date <- as.Date(data$Date, "%m/%d/%y")
 data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
 data <- dplyr::filter(data, data$State == "IL")
 
+data2<- data
+data2$Year <- format(as.POSIXct(data2$Date, format="%Y-%m-%d"),"%Y")
+tmp <- c()
+for(row in 1:nrow(data2)){
+  year <- data2[row, "Year"]
+  if(year < 1996){
+    loss <- data2[row, "Loss"]
+    if(loss == 0)
+      data2[row, "Loss"] <- 0
+    
+    else if(loss == 1)
+      data2[row,"Loss"] <- 50
+    
+    else if(loss == 2)
+      data2[row,"Loss"] <- 250
+    
+    else if(loss == 3)
+      data2[row,"Loss"] <- 3000
+    
+    else if(loss == 4)
+      data2[row,"Loss"] <- 30000
+    
+    else if(loss == 5)
+      data2[row,"Loss"] <- 250000
+    
+    else if(loss == 6)
+      data2[row,"Loss"] <- 25000000
+    
+    else if(loss == 7)
+      data2[row, "Loss"] <- 25000000
+    
+    else if(loss == 8)
+      data2[row,"Loss"] <- 250000000
+    
+    else
+      data2[row,"Loss"] <- 2500000000
+    
+    tmp <- rbind(tmp, data2[row,])
+    
+  }
+  else if(year >= 1996 & year < 2016)
+  {
+    val <- data2[row, c(7)]
+    data2[row, "Loss"] <- (val*1000000)
+    tmp <- rbind(tmp, data2[row,])
+  }
+  else{
+    data2[row, "Loss"] <- data2[row,"Loss"]
+    tmp <- rbind(tmp, data2[row,])
+  }
+  
+}
+
+data$Loss <- tmp$Loss
+rm(data2)
+rm(tmp)
+
 # Save data in RData file
 saveRDS(data, "data.rds")
 
@@ -113,27 +170,33 @@ ui <- dashboardPage(
       ),
       tabPanel("Charts", 
                fluidRow(
-                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
+                 box(title = "Number of Fatalities", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
                ),
                fluidRow(
-                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart"))
+                 box(title = "Loss in US Dollar", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart"))
                ),
                fluidRow(
-                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
+                 box(title = "Number of Injuries", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
                ),
                fluidRow(
                  box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
                ),
                fluidRow(
                  box(title = "Number of Tornadoes with Magnitude", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("magTornadoLineChart"))
+               ),
+               fluidRow(
+                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("distanceLineChart"))
+               ),
+               fluidRow(
+                 box(title = "15 Worst Counties for Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("CountiesLineChart"))
                )
       ),
       tabPanel("Tables", 
                fluidRow(
-                 box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
+                 box(title = "Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                  box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
                  box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable")),
-                 box(title = "Distance", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
+                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
                )
       )
     )
@@ -141,7 +204,7 @@ ui <- dashboardPage(
 ) # end dashBoardPage
 
 server <- function(input, output) { 
-  
+
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
@@ -193,84 +256,7 @@ server <- function(input, output) {
     input$hours
   })
   
-  # Renders table output that shows some key stats
-  statsValuesForTable <- reactive({
-    if (magnitudeChoice() == -1) {
-      tempData <- dplyr::filter(data, data$"End Lon" != 0 &
-                                  data$Length >= minLength() & data$Length <= maxLength() &
-                                  data$Width >= minWidth() & data$Width <= maxWidth() &
-                                  data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
-                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
-      
-      
-    } else {
-      tempData <- dplyr::filter(data, data$"End Lon" != 0 & 
-                              data$Magnitude == magnitudeChoice() &
-                              data$Length >= minLength() & data$Length <= maxLength() &
-                              data$Width >= minWidth() & data$Width <= maxWidth() & 
-                              data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
-                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
-    }
-    
-    
-    numDP = nrow(tempData)
-    
-    # width
-    meanWidth = format(round(mean(tempData$Width),2), nsmall = 2)
-    medianWidth = format(round(median(tempData$Width),2), nsmall = 2)
-    modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2)
-    
-    # length
-    meanLength = format(round(mean(tempData$Length),2), nsmall = 2)
-    medianLength = format(round(median(tempData$Length),2), nsmall = 2)
-    modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2)
-    
-    # injuries
-    meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
-    medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
-    modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
-    
-    # fatalities
-    meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2)
-    medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2)
-    modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2)
-    
-    # TODO: Loss
-    #meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
-    #medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
-    #modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
-    
-    data.frame(
-      Variable = c("Width",
-                   "Length",
-                   "Injuries",
-                   "Fatalities"
-                   ),
-      
-      Mean = as.character(c(
-        meanWidth,
-        meanLength,
-        meanInjuries,
-        meanFatalities
-      )),
-    
-    Median = as.character(c(
-      medianWidth,
-      medianLength,
-      medianInjuries,
-      medianFatalities
-    )),
-  
-  Mode = as.character(c(
-    modeWidth,
-    modeLength,
-    modeInjuries,
-    modeFatalities
-  )), stringsAsFactors = FALSE)
-    
-  })
-  
-  numDataPoints <- reactive({
+  filteredData <- reactive({
     if (magnitudeChoice() == -1) {
       tempData <- dplyr::filter(data, data$"End Lon" != 0 &
                                   data$Length >= minLength() & data$Length <= maxLength() &
@@ -287,7 +273,72 @@ server <- function(input, output) {
                                   data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                                   data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
     }
+    tempData
+  })
+  
+  # Renders table output that shows some key stats
+  statsValuesForTable <- reactive({
     
+    tempData <- filteredData()
+  
+    # width
+    meanWidth = format(round(mean(tempData$Width),2), nsmall = 2)
+    medianWidth = format(round(median(tempData$Width),2), nsmall = 2)
+    modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2)
+    
+    # length
+    meanLength = format(round(mean(tempData$Length),2), nsmall = 2)
+    medianLength = format(round(median(tempData$Length),2), nsmall = 2)
+    modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2)
+    
+    # injuries
+    meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
+    medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
+    modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
+      
+    # fatalities
+    meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2)
+    medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2)
+    modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2)
+    
+    # TODO: Loss
+    #meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
+    #medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
+    #modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
+      
+    data.frame(
+      Variable = c("Width",
+                   "Length",
+                   "Injuries",
+                   "Fatalities"
+                   ),
+      
+      Mean = as.character(c(
+        meanWidth,
+        meanLength,
+        meanInjuries,
+        meanFatalities
+      )),
+    
+      Median = as.character(c(
+        medianWidth,
+        medianLength,
+        medianInjuries,
+        medianFatalities
+      )),
+    
+      Mode = as.character(c(
+        modeWidth,
+        modeLength,
+        modeInjuries,
+        modeFatalities
+      )), stringsAsFactors = FALSE)
+      
+  })
+  
+  numDataPoints <- reactive({
+    
+    tempData <- filteredData()
     
     numDP = nrow(tempData)
   })
@@ -475,6 +526,17 @@ server <- function(input, output) {
     }
     
     DT::datatable(numTornadoTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  #Counties most hit by tornados
+  output$countiesTable <- DT::renderDataTable({
+
+    county <- data
+    colnames(county)[14] <- "FIPS.County"
+    county <- full_join(county, fips, by = 'FIPS.County')
+    countySum <- count(county, County.Name)
+    
+    DT::datatable(countiesTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
   
   
@@ -763,7 +825,7 @@ server <- function(input, output) {
         add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
         add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
         add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-        layout(xaxis=list(title = "Year", tickangle =45), yaxis = list (title = "Magnitude"))
+        layout(xaxis=list(title = "Year", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
     }
     
     if(ymhChoice() == "Monthly"){
@@ -778,7 +840,7 @@ server <- function(input, output) {
         add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
         add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
         add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-        layout(xaxis=list(title = "Month", tickangle =45), yaxis = list (title = "Magnitude"))
+        layout(xaxis=list(title = "Month", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
     }
     
     if(ymhChoice() == "Hourly"){
@@ -797,7 +859,7 @@ server <- function(input, output) {
           add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
           add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
           add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-          layout(xaxis=list(title = "Hour", tickangle =45), yaxis = list (title = "Magnitude"))
+          layout(xaxis=list(title = "Hour", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
         
       }else{
         mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
@@ -818,13 +880,67 @@ server <- function(input, output) {
                             categoryarray = c(mag$Hour)), yaxis = list (title = "Magnitude"))
         
       }
-      
-      magTab <- distinct(mag)
     }
     
     finalChart
   })
   
+  output$distanceLineChart <- renderPlotly({
+    
+    mag <- data
+ 
+    test <- c()
+    for(i in 1:nrow(mag)){
+      #Lat +                    Long -
+      temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
+      mag$Distance <- (temp*69)
+      
+      test <- rbind(test, mag[i,])
+      
+    }
+    
+    tmp <- c()
+    tmp$one <- as.data.frame(table(test$Distance < 50))
+    tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
+    tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
+    tmp$two <- tmp$two[-c(1),]
+    tmp$three <- as.data.frame(table(test$Distance >= 100 & test$Distance <=149.999999))
+    tmp$three <- tmp$three[-c(1),]
+    tmp$four <- as.data.frame(table(test$Distance >= 150 & test$Distance <=199.9999999))
+    tmp$four <- tmp$four[-c(1),]
+    tmp$five <- as.data.frame(table(test$Distance >= 200 & test$Distance <= 249.999999))
+    tmp$five <- tmp$five[-c(1),]
+    tmp$six <- as.data.frame(table(test$Distance >= 250 & test$Distance <= 299.999999))
+    tmp$six <- tmp$six[-c(1),]
+    tmp$seven <- as.data.frame(table(test$Distance >=300 & test$Distance <= 349.999999))
+    tmp$seven <- tmp$seven[-c(1),]
+    tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
+    tmp$eight <-tmp$eight[-c(1),]
+    Final <- c()
+    Final <- data.frame(x = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+    colnames(Final) <- c('Distance', 'Number of Tornadoes')
+    
+    dat <- data.frame(Final) 
+    finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+      layout(xaxis = list(title = "Distance From Chicago", categoryorder = "array",
+                          categoryarray = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles')), 
+                          yaxis = list (title = "Number of Tornadoes"))
+    finalChart
+  })
+  
+  output$CountiesLineChart <- renderPlotly({
+    county <- data
+    colnames(county)[14] <- "FIPS.County"
+    county <- full_join(county, fips, by = 'FIPS.County')
+    countySum <- count(county, County.Name)
+    countySum <- countySum %>% arrange(desc(n))
+    countySum <- countySum %>% top_n(14)
+    dat <- data.frame(countySum)
+    finalChart <-   plot_ly(dat, x = ~dat$County.Name, y = ~dat$n, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+      layout(xaxis = list(title = "County", categoryorder = "array", categoryarray = c(dat$County.Name)), yaxis = list (title = "Number of Tornadoes"))
+    finalChart
+  })
+
   
   # Leaflet map for all tornadoes
   # Need to add init markers
