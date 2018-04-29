@@ -99,7 +99,6 @@ saveRDS(data, "data.rds")
 # Example - Load RData file
 # tempData <- readRDS("data.rds")
 
-
 # Shiny Dashboard
 ui <- dashboardPage(
   dashboardHeader(title = "Project 3"),
@@ -146,8 +145,8 @@ ui <- dashboardPage(
                         
                  column(width = 4, align = "center",
                                h4("Loss"),
-                               selectInput("loss", "",
-                                           c("Lorem" ,"Ipsum")),
+                               splitLayout(numericInput("minLoss", label = "min", value = 0, min = 0, max = 1000000000),
+                                    numericInput("maxLoss", label = "max", value = 1000000000, min = 0, max = 1000000000)),
                                h4("Injuries"),
                                sliderInput("injuries", "",step = 5,
                                            min = 0, max = 500,
@@ -221,6 +220,16 @@ server <- function(input, output) {
     as.numeric(input$maxLength)
   })
   
+  # Loss
+  minLoss <- reactive ({
+    as.numeric(input$minLoss)
+  })
+  
+  maxLoss <- reactive ({
+    as.numeric(input$maxLoss)
+  })
+  
+  # Fatalities
   minFatal <- reactive ({
     input$fatalities[1]
   })
@@ -229,6 +238,7 @@ server <- function(input, output) {
     input$fatalities[2]
   })
   
+  # Injuries
   minInjury <- reactive ({
     input$injuries[1]
   })
@@ -251,7 +261,8 @@ server <- function(input, output) {
                                   data$Length >= minLength() & data$Length <= maxLength() &
                                   data$Width >= minWidth() & data$Width <= maxWidth() &
                                   data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
-                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
+                                  data$Loss >= minLoss() & data$Loss <= maxLoss())
       
       
     } else {
@@ -260,7 +271,8 @@ server <- function(input, output) {
                                   data$Length >= minLength() & data$Length <= maxLength() &
                                   data$Width >= minWidth() & data$Width <= maxWidth() & 
                                   data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
-                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
+                                  data$Loss >= minLoss() & data$Loss <= maxLoss())
     }
     tempData
   })
@@ -271,38 +283,40 @@ server <- function(input, output) {
     tempData <- filteredData()
   
     # width
-    meanWidth = format(round(mean(tempData$Width),2), nsmall = 2)
-    medianWidth = format(round(median(tempData$Width),2), nsmall = 2)
-    modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2)
+    meanWidth = format(round(mean(tempData$Width),2), nsmall = 2, big.mark = ",")
+    medianWidth = format(round(median(tempData$Width),2), nsmall = 2, big.mark = ",")
+    modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2, big.mark = ",")
     
     # length
-    meanLength = format(round(mean(tempData$Length),2), nsmall = 2)
-    medianLength = format(round(median(tempData$Length),2), nsmall = 2)
-    modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2)
+    meanLength = format(round(mean(tempData$Length),2), nsmall = 2, big.mark = ",")
+    medianLength = format(round(median(tempData$Length),2), nsmall = 2, big.mark = ",")
+    modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2, big.mark = ",")
     
     # injuries
-    meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
-    medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
-    modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
+    meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2, big.mark = ",")
+    medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2, big.mark = ",")
+    modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2, big.mark = ",")
       
     # fatalities
-    meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2)
-    medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2)
-    modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2)
+    meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
+    medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
+    modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     
-    # TODO: Loss
-    #meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
-    #medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
-    #modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
+    # loss
+    meanLoss = format(round(mean(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
+    medianLoss = format(round(median(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
+    modeLoss <- format(round(Mode(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
       
     data.frame(
-      Variable = c("Width",
+      Variable = c("Loss",
+                   "Width",
                    "Length",
                    "Injuries",
                    "Fatalities"
                    ),
       
       Mean = as.character(c(
+        meanLoss,
         meanWidth,
         meanLength,
         meanInjuries,
@@ -310,6 +324,7 @@ server <- function(input, output) {
       )),
     
       Median = as.character(c(
+        medianLoss,
         medianWidth,
         medianLength,
         medianInjuries,
@@ -317,6 +332,7 @@ server <- function(input, output) {
       )),
     
       Mode = as.character(c(
+        modeLoss,
         modeWidth,
         modeLength,
         modeInjuries,
@@ -330,6 +346,7 @@ server <- function(input, output) {
     tempData <- filteredData()
     
     numDP = nrow(tempData)
+    format(numDP,big.mark = ",")
   })
   
   output$numberDataPoints <- renderText({
@@ -575,8 +592,7 @@ server <- function(input, output) {
       }
       fatHour <- group_by(fatHour, Hour)
       fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
-      #fatHour <- mutate(fatHour, Injuries = sum(Injuries))
-      #fatHour <- mutate(fatHour, Loss = sum(Loss))
+      
       if(hourSetting() == 12){
         fatHour <- fatHour[order(fatHour$Hour),]
       }else{
@@ -848,7 +864,7 @@ server <- function(input, output) {
           add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
           add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
           add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-          layout(xaxis=list(title = "Hour", tickangle =-45), yaxis = list (title = "Magnitude"),barmode = "stack")
+          layout(xaxis=list(title = "Hour", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
         
       }else{
         mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
@@ -941,7 +957,9 @@ server <- function(input, output) {
                               data$Length >= minLength() & data$Length <= maxLength() &
                               data$Width >= minWidth() & data$Width <= maxWidth() &
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
-                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
+                              data$Loss >= minLoss() & data$Loss <= maxLoss())
+      
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
@@ -953,7 +971,8 @@ server <- function(input, output) {
                               data$Length >= minLength() & data$Length <= maxLength() &
                               data$Width >= minWidth() & data$Width <= maxWidth() & 
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
-                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
+                              data$Loss >= minLoss() & data$Loss <= maxLoss())
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
