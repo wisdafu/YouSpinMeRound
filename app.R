@@ -36,6 +36,63 @@ data$Date <- as.Date(data$Date, "%m/%d/%y")
 data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
 data <- dplyr::filter(data, data$State == "IL")
 
+data2<- data
+data2$Year <- format(as.POSIXct(data2$Date, format="%Y-%m-%d"),"%Y")
+tmp <- c()
+for(row in 1:nrow(data2)){
+  year <- data2[row, "Year"]
+  if(year < 1996){
+    loss <- data2[row, "Loss"]
+    if(loss == 0)
+      data2[row, "Loss"] <- 0
+    
+    else if(loss == 1)
+      data2[row,"Loss"] <- 50
+    
+    else if(loss == 2)
+      data2[row,"Loss"] <- 250
+    
+    else if(loss == 3)
+      data2[row,"Loss"] <- 3000
+    
+    else if(loss == 4)
+      data2[row,"Loss"] <- 30000
+    
+    else if(loss == 5)
+      data2[row,"Loss"] <- 250000
+    
+    else if(loss == 6)
+      data2[row,"Loss"] <- 25000000
+    
+    else if(loss == 7)
+      data2[row, "Loss"] <- 25000000
+    
+    else if(loss == 8)
+      data2[row,"Loss"] <- 250000000
+    
+    else
+      data2[row,"Loss"] <- 2500000000
+    
+    tmp <- rbind(tmp, data2[row,])
+    
+  }
+  else if(year >= 1996 & year < 2016)
+  {
+    val <- data2[row, c(7)]
+    data2[row, "Loss"] <- (val*1000000)
+    tmp <- rbind(tmp, data2[row,])
+  }
+  else{
+    data2[row, "Loss"] <- data2[row,"Loss"]
+    tmp <- rbind(tmp, data2[row,])
+  }
+  
+}
+
+data$Loss <- tmp$Loss
+rm(data2)
+rm(tmp)
+
 # Save data in RData file
 saveRDS(data, "data.rds")
 
