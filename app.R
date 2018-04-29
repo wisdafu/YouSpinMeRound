@@ -115,10 +115,7 @@ ui <- dashboardPage(
       radioButtons('hours', 'Hours:',
                    c('12 Hr' = 24,
                      '24 Hr' = 12)             
-      )
-      ,sliderInput("distanceSlider", "Distance (miles):",
-                    min = 0, max = 345,
-                    value = 69, step = 1),
+      ),
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
@@ -204,10 +201,6 @@ server <- function(input, output) {
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
-  })
-  
-  getDistance <- reactive ({
-    input$distanceSlider/69
   })
   
   # Values for min/max for Length
@@ -473,7 +466,7 @@ server <- function(input, output) {
     tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
     tmp$eight <-tmp$eight[-c(1),]
     Final <- c()
-    Final <- data.frame(x = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+    Final <- data.frame(x = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
     colnames(Final) <- c('Distance', 'Number of Tornadoes')
     DT::datatable(Final, options = list(pageLength = 8, lengthChange = FALSE, searching = FALSE))
   })
@@ -855,7 +848,7 @@ server <- function(input, output) {
           add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
           add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
           add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-          layout(xaxis=list(title = "Hour", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
+          layout(xaxis=list(title = "Hour", tickangle =-45), yaxis = list (title = "Magnitude"),barmode = "stack")
         
       }else{
         mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
@@ -913,13 +906,13 @@ server <- function(input, output) {
     tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
     tmp$eight <-tmp$eight[-c(1),]
     Final <- c()
-    Final <- data.frame(x = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+    Final <- data.frame(x = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
     colnames(Final) <- c('Distance', 'Number of Tornadoes')
     
     dat <- data.frame(Final) 
     finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
       layout(xaxis = list(title = "Distance From Chicago", categoryorder = "array",
-                          categoryarray = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles')), 
+                          categoryarray = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350')), 
                           yaxis = list (title = "Number of Tornadoes"))
     finalChart
   })
