@@ -53,7 +53,10 @@ ui <- dashboardPage(
       radioButtons('hours', 'Hours:',
                    c('12 Hr' = 24,
                      '24 Hr' = 12)             
-      ),
+      )
+      ,sliderInput("distanceSlider", "Distance (miles):",
+                    min = 0, max = 345,
+                    value = 69, step = 1),
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
@@ -123,7 +126,8 @@ ui <- dashboardPage(
                fluidRow(
                  box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                  box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
-                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable"))
+                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable")),
+                 box(title = "Distance", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
                )
       )
     )
@@ -135,6 +139,10 @@ server <- function(input, output) {
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
+  })
+  
+  getDistance <- reactive ({
+    input$distanceSlider/69
   })
   
   # Values for min/max for Length
@@ -282,7 +290,6 @@ server <- function(input, output) {
   })
   
   #Magnitude Code
-  #TODO Finish up
   output$magnitudeTable <- DT::renderDataTable({
     mag <- data
     
@@ -322,6 +329,23 @@ server <- function(input, output) {
     }
     
     DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  #Distance from Chicago
+  output$distanceTable <- DT::renderDataTable({
+    mag <- data
+    
+    test <- c()
+    for(i in 1:nrow(mag)){
+                            #Lat +                    Long -
+      temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
+      
+      if(temp <= getDistance()){
+        test <- rbind(test, mag[i,])
+      }
+    }
+    
+    DT::datatable(test, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
   
   output$numTornadoTable <- DT::renderDataTable({
