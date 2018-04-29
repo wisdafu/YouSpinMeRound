@@ -402,14 +402,33 @@ server <- function(input, output) {
     for(i in 1:nrow(mag)){
                             #Lat +                    Long -
       temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
-      mag$Distance <- temp
-      if(temp <= getDistance()){
+      mag$Distance <- (temp*69)
+      
         test <- rbind(test, mag[i,])
 
-      }
     }
     
-    DT::datatable(test, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+    tmp <- c()
+    tmp$one <- as.data.frame(table(test$Distance < 50))
+    tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
+    tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
+    tmp$two <- tmp$two[-c(1),]
+    tmp$three <- as.data.frame(table(test$Distance >= 100 & test$Distance <=149.999999))
+    tmp$three <- tmp$three[-c(1),]
+    tmp$four <- as.data.frame(table(test$Distance >= 150 & test$Distance <=199.9999999))
+    tmp$four <- tmp$four[-c(1),]
+    tmp$five <- as.data.frame(table(test$Distance >= 200 & test$Distance <= 249.999999))
+    tmp$five <- tmp$five[-c(1),]
+    tmp$six <- as.data.frame(table(test$Distance >= 250 & test$Distance <= 299.999999))
+    tmp$six <- tmp$six[-c(1),]
+    tmp$seven <- as.data.frame(table(test$Distance >=300 & test$Distance <= 349.999999))
+    tmp$seven <- tmp$seven[-c(1),]
+    tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
+    tmp$eight <-tmp$eight[-c(1),]
+    Final <- c()
+    Final <- data.frame(x = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+    colnames(Final) <- c('Distance', 'Number of Tornadoes')
+    DT::datatable(Final, options = list(pageLength = 8, lengthChange = FALSE, searching = FALSE))
   })
   
   output$numTornadoTable <- DT::renderDataTable({
