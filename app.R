@@ -17,6 +17,11 @@ library(lubridate)
 library(dplyr)
 library(leaflet)
 
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
 # Read in dataset with relevant columns and rename them
 data <- read.csv(file = "revised.1950-2016_all_tornadoes.csv", header = TRUE)
 fips <- read.csv(file = 'fips.csv', header = TRUE)
@@ -102,6 +107,7 @@ ui <- dashboardPage(
                  column(width = 4, align = "center",
                         
                         h4("Stats:"),
+                        textOutput("numberDataPoints"),
                         tableOutput("statsTable")
                         ))
       ),
@@ -164,19 +170,19 @@ server <- function(input, output) {
   })
   
   minFatal <- reactive ({
-    input$injuries[1]
-  })
-  
-  maxFatal <- reactive ({
-    input$injuries[2]
-  })
-  
-  minInjury <- reactive ({
     input$fatalities[1]
   })
   
-  maxInjury <- reactive ({
+  maxFatal <- reactive ({
     input$fatalities[2]
+  })
+  
+  minInjury <- reactive ({
+    input$injuries[1]
+  })
+  
+  maxInjury <- reactive ({
+    input$injuries[2]
   })
   
   magnitudeChoice <- reactive ({
@@ -189,28 +195,105 @@ server <- function(input, output) {
   
   # Renders table output that shows some key stats
   statsValuesForTable <- reactive({
-    data.frame(
-      Variable = c("Min Width",
-                   "Max Width",
-                   "Min Length",
-                   "Max Length",
-                   "Min Injuries",
-                   "Max Injuries",
-                   "Min Fatalities",
-                   "Max Fatalities"
-      ),
+    if (magnitudeChoice() == -1) {
+      tempData <- dplyr::filter(data, data$"End Lon" != 0 &
+                                  data$Length >= minLength() & data$Length <= maxLength() &
+                                  data$Width >= minWidth() & data$Width <= maxWidth() &
+                                  data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
       
-      Value = as.character(c(
-        input$minWidth,
-        input$maxWidth,
-        input$minLength,
-        input$maxLength,
-        input$injuries[1],
-        input$injuries[2],
-        input$fatalities[1],
-        input$fatalities[2]
-      )), stringsAsFactors = FALSE)
+      
+    } else {
+      tempData <- dplyr::filter(data, data$"End Lon" != 0 & 
+                              data$Magnitude == magnitudeChoice() &
+                              data$Length >= minLength() & data$Length <= maxLength() &
+                              data$Width >= minWidth() & data$Width <= maxWidth() & 
+                              data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+    }
     
+    
+    numDP = nrow(tempData)
+    
+    # width
+    meanWidth = format(round(mean(tempData$Width),2), nsmall = 2)
+    medianWidth = format(round(median(tempData$Width),2), nsmall = 2)
+    modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2)
+    
+    # length
+    meanLength = format(round(mean(tempData$Length),2), nsmall = 2)
+    medianLength = format(round(median(tempData$Length),2), nsmall = 2)
+    modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2)
+    
+    # injuries
+    meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
+    medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
+    modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
+    
+    # fatalities
+    meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2)
+    medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2)
+    modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2)
+    
+    # TODO: Loss
+    #meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2)
+    #medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2)
+    #modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2)
+    
+    data.frame(
+      Variable = c("Width",
+                   "Length",
+                   "Injuries",
+                   "Fatalities"
+                   ),
+      
+      Mean = as.character(c(
+        meanWidth,
+        meanLength,
+        meanInjuries,
+        meanFatalities
+      )),
+    
+    Median = as.character(c(
+      medianWidth,
+      medianLength,
+      medianInjuries,
+      medianFatalities
+    )),
+  
+  Mode = as.character(c(
+    modeWidth,
+    modeLength,
+    modeInjuries,
+    modeFatalities
+  )), stringsAsFactors = FALSE)
+    
+  })
+  
+  numDataPoints <- reactive({
+    if (magnitudeChoice() == -1) {
+      tempData <- dplyr::filter(data, data$"End Lon" != 0 &
+                                  data$Length >= minLength() & data$Length <= maxLength() &
+                                  data$Width >= minWidth() & data$Width <= maxWidth() &
+                                  data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+      
+      
+    } else {
+      tempData <- dplyr::filter(data, data$"End Lon" != 0 & 
+                                  data$Magnitude == magnitudeChoice() &
+                                  data$Length >= minLength() & data$Length <= maxLength() &
+                                  data$Width >= minWidth() & data$Width <= maxWidth() & 
+                                  data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+    }
+    
+    
+    numDP = nrow(tempData)
+  })
+  
+  output$numberDataPoints <- renderText({
+    paste("# Data Points: ", as.character(numDataPoints()))
   })
   
   output$statsTable <- renderTable({
