@@ -115,10 +115,7 @@ ui <- dashboardPage(
       radioButtons('hours', 'Hours:',
                    c('12 Hr' = 24,
                      '24 Hr' = 12)             
-      )
-      ,sliderInput("distanceSlider", "Distance (miles):",
-                    min = 0, max = 345,
-                    value = 69, step = 1),
+      ),
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
@@ -204,10 +201,6 @@ server <- function(input, output) {
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
-  })
-  
-  getDistance <- reactive ({
-    input$distanceSlider/69
   })
   
   # Values for min/max for Length
