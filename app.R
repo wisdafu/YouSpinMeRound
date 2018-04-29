@@ -819,12 +819,12 @@ server <- function(input, output) {
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
       dat <- data.frame(mag)
       
-      finalChart <- plot_ly(dat, x=~dat$Year, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
-        add_trace(y = ~dat$M2, name = "Magnitude 2") %>%
-        add_trace(y = ~dat$M3, name = "Magnitude 3") %>%
-        add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
-        add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
-        add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
+      finalChart <- plot_ly(dat, x=~dat$Year, y =~dat$M1, text = ~paste0((signif((dat$M1/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 1", type = "bar") %>%
+        add_trace(y = ~dat$M2, text = ~paste0((signif((dat$M2/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 2") %>%
+        add_trace(y = ~dat$M3, text = ~paste0((signif((dat$M3/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 3") %>%
+        add_trace(y = ~dat$M4, text = ~paste0((signif((dat$M4/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 4") %>%
+        add_trace(y = ~dat$M5, text = ~paste0((signif((dat$M5/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 5") %>%
+        add_trace(y = ~dat$M0, text = ~paste0((signif((dat$M0/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude Unknown") %>%
         layout(xaxis=list(title = "Year", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
     }
     
