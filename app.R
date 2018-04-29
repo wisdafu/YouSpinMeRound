@@ -170,27 +170,33 @@ ui <- dashboardPage(
       ),
       tabPanel("Charts", 
                fluidRow(
-                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
+                 box(title = "Number of Fatalities", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
                ),
                fluidRow(
-                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart"))
+                 box(title = "Loss in US Dollar", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart"))
                ),
                fluidRow(
-                 box(title = "Chart", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
+                 box(title = "Number of Injuries", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
                ),
                fluidRow(
                  box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
                ),
                fluidRow(
                  box(title = "Number of Tornadoes with Magnitude", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("magTornadoLineChart"))
+               ),
+               fluidRow(
+                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("distanceLineChart"))
+               ),
+               fluidRow(
+                 box(title = "15 Worst Counties for Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("CountiesLineChart"))
                )
       ),
       tabPanel("Tables", 
                fluidRow(
-                 box(title = "Table", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
+                 box(title = "Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                  box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
                  box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable")),
-                 box(title = "Distance", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
+                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
                )
       )
     )
@@ -886,13 +892,65 @@ server <- function(input, output) {
                             categoryarray = c(mag$Hour)), yaxis = list (title = "Magnitude"))
         
       }
-      
-      magTab <- distinct(mag)
     }
     
     finalChart
   })
   
+  output$distanceLineChart <- renderPlotly({
+    
+    mag <- data
+ 
+    test <- c()
+    for(i in 1:nrow(mag)){
+      #Lat +                    Long -
+      temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
+      mag$Distance <- (temp*69)
+      
+      test <- rbind(test, mag[i,])
+      
+    }
+    
+    tmp <- c()
+    tmp$one <- as.data.frame(table(test$Distance < 50))
+    tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
+    tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
+    tmp$two <- tmp$two[-c(1),]
+    tmp$three <- as.data.frame(table(test$Distance >= 100 & test$Distance <=149.999999))
+    tmp$three <- tmp$three[-c(1),]
+    tmp$four <- as.data.frame(table(test$Distance >= 150 & test$Distance <=199.9999999))
+    tmp$four <- tmp$four[-c(1),]
+    tmp$five <- as.data.frame(table(test$Distance >= 200 & test$Distance <= 249.999999))
+    tmp$five <- tmp$five[-c(1),]
+    tmp$six <- as.data.frame(table(test$Distance >= 250 & test$Distance <= 299.999999))
+    tmp$six <- tmp$six[-c(1),]
+    tmp$seven <- as.data.frame(table(test$Distance >=300 & test$Distance <= 349.999999))
+    tmp$seven <- tmp$seven[-c(1),]
+    tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
+    tmp$eight <-tmp$eight[-c(1),]
+    Final <- c()
+    Final <- data.frame(x = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+    colnames(Final) <- c('Distance', 'Number of Tornadoes')
+    
+    dat <- data.frame(Final) 
+    finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+      layout(xaxis = list(title = "Distance From Chicago", categoryorder = "array", categoryarray = c(Final$Distance), tickangle = 45), yaxis = list (title = "Number of Tornadoes"))
+    finalChart
+  })
+  
+  output$CountiesLineChart <- renderPlotly({
+    county <- data
+    colnames(county)[14] <- "FIPS.County"
+    county <- full_join(county, fips, by = 'FIPS.County')
+    countySum <- count(county, County.Name)
+    countySum <- countySum %>% arrange(desc(n))
+    countySum <- countySum %>% top_n(14)
+    dat <- data.frame(countySum)
+    finalChart <-   plot_ly(dat, x = ~dat$County.Name, y = ~dat$n, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+      layout(xaxis = list(title = "County", categoryorder = "array", categoryarray = c(dat$County.Name), tickangle = 45), yaxis = list (title = "Number of Tornadoes"))
+    finalChart
+  })
+
   
   # Leaflet map for all tornadoes
   # Need to add init markers
