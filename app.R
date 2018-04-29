@@ -115,7 +115,7 @@ ui <- dashboardPage(
                    c('12 Hr' = 24,
                      '24 Hr' = 12)             
       ),
-      radioButtons('Measurments', 'Measurements:',
+      radioButtons('measurement', 'Measurements:',
                    c('Imperial' = 1,
                      'Metric' = 0)             
       ),
@@ -257,6 +257,10 @@ server <- function(input, output) {
   
   hourSetting <- reactive ({
     input$hours
+  })
+  
+  measurementSetting <- reactive ({
+    input$measurement
   })
   
   filteredData <- reactive({
@@ -463,13 +467,18 @@ server <- function(input, output) {
     for(i in 1:nrow(mag)){
                             #Lat +                    Long -
       temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
+      if(measurementSetting() == 1){
       mag$Distance <- (temp*69)
-      
+      }
+      else{
+        mag$Distance <- ((temp*69)*1.60934)
+      }
         test <- rbind(test, mag[i,])
 
     }
     
     tmp <- c()
+    if(measurementSetting() == 1){
     tmp$one <- as.data.frame(table(test$Distance < 50))
     tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
     tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
@@ -488,7 +497,29 @@ server <- function(input, output) {
     tmp$eight <-tmp$eight[-c(1),]
     Final <- c()
     Final <- data.frame(x = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
-    colnames(Final) <- c('Distance', 'Number of Tornadoes')
+    colnames(Final) <- c('Distance (Miles)', 'Number of Tornadoes')
+    }
+    else{
+      tmp$one <- as.data.frame(table(test$Distance < 75))
+      tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
+      tmp$two <-as.data.frame(table(test$Distance >= 75 & test$Distance <149.99))
+      tmp$two <- tmp$two[-c(1),]
+      tmp$three <- as.data.frame(table(test$Distance >= 150 & test$Distance <=224.999999))
+      tmp$three <- tmp$three[-c(1),]
+      tmp$four <- as.data.frame(table(test$Distance >=225 & test$Distance <=299.9999999))
+      tmp$four <- tmp$four[-c(1),]
+      tmp$five <- as.data.frame(table(test$Distance >= 300 & test$Distance <= 374.999999))
+      tmp$five <- tmp$five[-c(1),]
+      tmp$six <- as.data.frame(table(test$Distance >= 375 & test$Distance <= 449.999999))
+      tmp$six <- tmp$six[-c(1),]
+      tmp$seven <- as.data.frame(table(test$Distance >=450 & test$Distance <= 524.999999))
+      tmp$seven <- tmp$seven[-c(1),]
+      tmp$eight <- as.data.frame(table(test$Distance >=525 & test$Distance <= 600))
+      tmp$eight <-tmp$eight[-c(1),]
+      Final <- c()
+      Final <- data.frame(x = c('<75', '75-149.99', '150-224.99', '225-299.99', '300-374.99', '375-449.99', '450-542.99', '>525'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+      colnames(Final) <- c('Distance (Kilometers)', 'Number of Tornadoes')
+    }
     DT::datatable(Final, options = list(pageLength = 8, lengthChange = FALSE, searching = FALSE))
   })
   
@@ -897,43 +928,77 @@ server <- function(input, output) {
   output$distanceLineChart <- renderPlotly({
     
     mag <- data
- 
+    #mag$distance <- mag$Date
     test <- c()
     for(i in 1:nrow(mag)){
       #Lat +                    Long -
       temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
-      mag$Distance <- (temp*69)
-      
+      if(measurementSetting() == 1){
+        mag$Distance <- (temp*69)
+      }
+      else{
+        mag$Distance <- ((temp*69)*1.60934)
+      }
       test <- rbind(test, mag[i,])
       
     }
     
     tmp <- c()
-    tmp$one <- as.data.frame(table(test$Distance < 50))
-    tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
-    tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
-    tmp$two <- tmp$two[-c(1),]
-    tmp$three <- as.data.frame(table(test$Distance >= 100 & test$Distance <=149.999999))
-    tmp$three <- tmp$three[-c(1),]
-    tmp$four <- as.data.frame(table(test$Distance >= 150 & test$Distance <=199.9999999))
-    tmp$four <- tmp$four[-c(1),]
-    tmp$five <- as.data.frame(table(test$Distance >= 200 & test$Distance <= 249.999999))
-    tmp$five <- tmp$five[-c(1),]
-    tmp$six <- as.data.frame(table(test$Distance >= 250 & test$Distance <= 299.999999))
-    tmp$six <- tmp$six[-c(1),]
-    tmp$seven <- as.data.frame(table(test$Distance >=300 & test$Distance <= 349.999999))
-    tmp$seven <- tmp$seven[-c(1),]
-    tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
-    tmp$eight <-tmp$eight[-c(1),]
-    Final <- c()
-    Final <- data.frame(x = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
-    colnames(Final) <- c('Distance', 'Number of Tornadoes')
+    if(measurementSetting() == 1){
+      tmp$one <- as.data.frame(table(test$Distance < 50))
+      tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
+      tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
+      tmp$two <- tmp$two[-c(1),]
+      tmp$three <- as.data.frame(table(test$Distance >= 100 & test$Distance <=149.999999))
+      tmp$three <- tmp$three[-c(1),]
+      tmp$four <- as.data.frame(table(test$Distance >= 150 & test$Distance <=199.9999999))
+      tmp$four <- tmp$four[-c(1),]
+      tmp$five <- as.data.frame(table(test$Distance >= 200 & test$Distance <= 249.999999))
+      tmp$five <- tmp$five[-c(1),]
+      tmp$six <- as.data.frame(table(test$Distance >= 250 & test$Distance <= 299.999999))
+      tmp$six <- tmp$six[-c(1),]
+      tmp$seven <- as.data.frame(table(test$Distance >=300 & test$Distance <= 349.999999))
+      tmp$seven <- tmp$seven[-c(1),]
+      tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
+      tmp$eight <-tmp$eight[-c(1),]
+      Final <- c()
+      Final <- data.frame(x = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+      colnames(Final) <- c('Distance (Miles)', 'Number of Tornadoes')
+    }
+    else{
+      tmp$one <- as.data.frame(table(test$Distance < 75))
+      tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
+      tmp$two <-as.data.frame(table(test$Distance >= 75 & test$Distance <149.99))
+      tmp$two <- tmp$two[-c(1),]
+      tmp$three <- as.data.frame(table(test$Distance >= 150 & test$Distance <=224.999999))
+      tmp$three <- tmp$three[-c(1),]
+      tmp$four <- as.data.frame(table(test$Distance >=225 & test$Distance <=299.9999999))
+      tmp$four <- tmp$four[-c(1),]
+      tmp$five <- as.data.frame(table(test$Distance >= 300 & test$Distance <= 374.999999))
+      tmp$five <- tmp$five[-c(1),]
+      tmp$six <- as.data.frame(table(test$Distance >= 375 & test$Distance <= 449.999999))
+      tmp$six <- tmp$six[-c(1),]
+      tmp$seven <- as.data.frame(table(test$Distance >=450 & test$Distance <= 524.999999))
+      tmp$seven <- tmp$seven[-c(1),]
+      tmp$eight <- as.data.frame(table(test$Distance >=525 & test$Distance <= 600))
+      tmp$eight <-tmp$eight[-c(1),]
+      Final <- c()
+      Final <- data.frame(x = c('<75', '75-149.99', '150-224.99', '225-299.99', '300-374.99', '375-449.99', '450-542.99', '>525'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+      colnames(Final) <- c('Distance (Kilometers)', 'Number of Tornadoes')
+    }
     
     dat <- data.frame(Final) 
+    if(measurementSetting() == 1){
     finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
-      layout(xaxis = list(title = "Distance From Chicago", categoryorder = "array",
+      layout(xaxis = list(title = "Distance From Chicago (Miles)", categoryorder = "array",
                           categoryarray = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350')), 
-                          yaxis = list (title = "Number of Tornadoes"))
+                          yaxis = list (title = "Number of Tornadoes"))}
+    else{
+      finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Distance From Chicago (Kilometers", categoryorder = "array",
+                            categoryarray = c('<75', '75-149.99', '150-224.99', '225-299.99', '300-374.99', '375-449.99', '450-542.99', '>525')), 
+               yaxis = list (title = "Number of Tornadoes"))
+    }
     finalChart
   })
   
