@@ -314,14 +314,15 @@ server <- function(input, output) {
   #Distance from Chicago
   output$distanceTable <- DT::renderDataTable({
     mag <- data
-    
+    #mag$distance <- mag$Date
     test <- c()
     for(i in 1:nrow(mag)){
                             #Lat +                    Long -
       temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
-      
+      mag$Distance <- temp
       if(temp <= getDistance()){
         test <- rbind(test, mag[i,])
+
       }
     }
     
