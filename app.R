@@ -170,34 +170,30 @@ ui <- dashboardPage(
       ),
       tabPanel("Charts", 
                fluidRow(
-                 box(title = "Number of Fatalities", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart"))
-               ),
-               fluidRow(
-                 box(title = "Loss in US Dollar", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart"))
-               ),
-               fluidRow(
-                 box(title = "Number of Injuries", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
-               ),
-               fluidRow(
-                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart"))
-               ),
-               fluidRow(
-                 box(title = "Number of Tornadoes with Magnitude", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("magTornadoLineChart"))
-               ),
-               fluidRow(
-                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("distanceLineChart"))
-               ),
-               fluidRow(
+                 splitLayout(cellWidths = c("25%", "25%", "25%", "25%"),
+                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart")),
+                 box(title = "Number of Tornadoes with Magnitude", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("magTornadoLineChart")),
+                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("distanceLineChart")),
                  box(title = "15 Worst Counties for Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("CountiesLineChart"))
-               )
+                 ) 
+              ),
+              fluidRow(
+                splitLayout(cellWidths = c("33%", "33%", "33%"),
+                            box(title = "Number of Fatalities", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart")),
+                            box(title = "Loss in US Dollar", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart")),
+                            box(title = "Number of Injuries", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
+                ) 
+              )
       ),
       tabPanel("Tables", 
                fluidRow(
+                 splitLayout(cellWidths = c("25%", "25%", "25%", "25%"),
                  box(title = "Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                  box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
                  box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable")),
                  box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
-               )
+                 ) 
+              )
       )
     )
   ) # end dashboardBody
