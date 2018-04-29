@@ -477,6 +477,17 @@ server <- function(input, output) {
     DT::datatable(numTornadoTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
   
+  #Counties most hit by tornados
+  output$countiesTable <- DT::renderDataTable({
+
+    county <- data
+    colnames(county)[14] <- "FIPS.County"
+    county <- full_join(county, fips, by = 'FIPS.County')
+    countySum <- count(county, County.Name)
+    
+    DT::datatable(countiesTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
   
   # chart showing the fatalities for each year/month/hour
   output$fatalitiesLineChart <- renderPlotly({
