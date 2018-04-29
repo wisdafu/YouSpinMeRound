@@ -181,6 +181,26 @@ server <- function(input, output) {
   
   # Renders table output that shows some key stats
   statsValuesForTable <- reactive({
+    if (magnitudeChoice() == -1) {
+      tempData <- dplyr::filter(data, data$"End Lon" != 0 &
+                                  data$Length >= minLength() & data$Length <= maxLength() &
+                                  data$Width >= minWidth() & data$Width <= maxWidth() &
+                                  data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                                  data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+      print("all")
+    } else {
+      tempData <- dplyr::filter(data, data$"End Lon" != 0 & 
+                              data$Magnitude == magnitudeChoice() &
+                              data$Length >= minLength() & data$Length <= maxLength() &
+                              data$Width >= minWidth() & data$Width <= maxWidth() & 
+                              data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
+                              data$Fatalities >= minFatal() & data$Fatalities <= maxFatal())
+      print(as.character(magnitudeChoice()))
+    }
+    
+    
+    
+    print(tempData)
     data.frame(
       Variable = c("Min Width",
                    "Max Width",
