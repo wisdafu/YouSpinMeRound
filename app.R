@@ -837,7 +837,7 @@ server <- function(input, output) {
         add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
         add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
         add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-        layout(xaxis=list(title = "Year", tickangle =45), yaxis = list (title = "Magnitude"))
+        layout(xaxis=list(title = "Year", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
     }
     
     if(ymhChoice() == "Monthly"){
@@ -852,7 +852,7 @@ server <- function(input, output) {
         add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
         add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
         add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-        layout(xaxis=list(title = "Month", tickangle =45), yaxis = list (title = "Magnitude"))
+        layout(xaxis=list(title = "Month", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
     }
     
     if(ymhChoice() == "Hourly"){
@@ -871,7 +871,7 @@ server <- function(input, output) {
           add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
           add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
           add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-          layout(xaxis=list(title = "Hour", tickangle =45), yaxis = list (title = "Magnitude"))
+          layout(xaxis=list(title = "Hour", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
         
       }else{
         mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
@@ -934,7 +934,9 @@ server <- function(input, output) {
     
     dat <- data.frame(Final) 
     finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
-      layout(xaxis = list(title = "Distance From Chicago", categoryorder = "array", categoryarray = c(Final$Distance), tickangle = 45), yaxis = list (title = "Number of Tornadoes"))
+      layout(xaxis = list(title = "Distance From Chicago", categoryorder = "array",
+                          categoryarray = c('50 or Less Miles', '50 to 99.99 Miles', '100 to 149.99 Miles', '150 to 199.99 Miles', '200 to 249.99 Miles', '250 to 299.99 Miles', '300 to 349.99 Miles', '350+ Miles')), 
+                          yaxis = list (title = "Number of Tornadoes"))
     finalChart
   })
   
@@ -947,7 +949,7 @@ server <- function(input, output) {
     countySum <- countySum %>% top_n(14)
     dat <- data.frame(countySum)
     finalChart <-   plot_ly(dat, x = ~dat$County.Name, y = ~dat$n, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
-      layout(xaxis = list(title = "County", categoryorder = "array", categoryarray = c(dat$County.Name), tickangle = 45), yaxis = list (title = "Number of Tornadoes"))
+      layout(xaxis = list(title = "County", categoryorder = "array", categoryarray = c(dat$County.Name)), yaxis = list (title = "Number of Tornadoes"))
     finalChart
   })
 
