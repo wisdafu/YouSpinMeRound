@@ -103,7 +103,7 @@ saveRDS(data, "data.rds")
 
 # create top 10 data
 top10 <- data[ which(
-    (data$Loss == 25000000 & data$Width == 200 & data$Length == 15 & data$Injuries == 500 & data$Fatalities == 33)   | 
+  (data$Loss == 25000000 & data$Width == 200 & data$Length == 15 & data$Injuries == 500 & data$Fatalities == 33)   | 
     (data$Loss == 250000 & data$Width == 1200 & data$Length == 25.5 & data$Injuries == 450 & data$Fatalities == 24)   |
     (data$Loss == 935225000 & data$Width == 880 & data$Length == 46.36 & data$Injuries == 125 & data$Fatalities == 3) |
     (data$Loss == 250000 & data$Width == 600 & data$Length == 16.4 & data$Injuries == 350 & data$Fatalities == 29)    |
@@ -113,7 +113,7 @@ top10 <- data[ which(
     (data$Loss == 2000000 & data$Width == 325 & data$Length == 26.09 & data$Injuries == 108 & data$Fatalities == 8)   |
     (data$Loss == 25000000 & data$Width == 120 & data$Length == 35.9 & data$Injuries == 90 & data$Fatalities == 2)    |
     (data$Loss == 25000000 & data$Width == 150 & data$Length == 8.80 & data$Injuries == 100 & data$Fatalities == 1)
-  ) , ]
+) , ]
 
 
 # Shiny Dashboard
@@ -147,73 +147,73 @@ ui <- dashboardPage(
                  column(width = 12, 
                         box(title = "Map", width = NULL, solidHeader = TRUE, status = "primary",
                             leafletOutput("map", height = 500))
-               )),
+                 )),
                fluidRow(
                  h1("Filters", align = "center"),
-                  
+                 
                  column(width = 4, align = "center",
                         h4("Loss"),
                         splitLayout(numericInput("minLoss", label = "min", value = 0, min = 0, max = 1000000000),
                                     numericInput("maxLoss", label = "max", value = 1000000000, min = 0, max = 1000000000)),
                         h4("Width (yd)"),
-                               splitLayout(numericInput("minWidth", label = "min", value = 0, min = 0, max = 2630),
-                                           numericInput("maxWidth", label = "max", value = 2630, min = 0, max = 2630)),
+                        splitLayout(numericInput("minWidth", label = "min", value = 0, min = 0, max = 2630),
+                                    numericInput("maxWidth", label = "max", value = 2630, min = 0, max = 2630)),
                         h4("Length (mi)"),
-                               splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 157),
-                                           numericInput("maxLength", label = "max", value = 157, min = 0, max = 157))
-                        ),
-                        
+                        splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 157),
+                                    numericInput("maxLength", label = "max", value = 157, min = 0, max = 157))
+                 ),
+                 
                  
                  column(width = 4, align = "center",
                         h4("Magnitude/Top 10 destructive"),
                         selectInput("magnitudeLvl", "",
                                     c("All" = -1 , "Top 10 destructive" = -2, "0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),       
-                       
-                         h4("Injuries"),
-                               sliderInput("injuries", "",step = 5,
-                                           min = 0, max = 500,
-                                           value = c(0,500)),
-                               h4("Fatalities"),
-                               sliderInput("fatalities", "",step = 1,
-                                           min = 0, max = 33,
-                                           value = c(0,33))
-                        ),
                         
+                        h4("Injuries"),
+                        sliderInput("injuries", "",step = 5,
+                                    min = 0, max = 500,
+                                    value = c(0,500)),
+                        h4("Fatalities"),
+                        sliderInput("fatalities", "",step = 1,
+                                    min = 0, max = 33,
+                                    value = c(0,33))
+                 ),
+                 
                  column(width = 4, align = "center",
                         
                         h4("Stats:"),
                         textOutput("numberDataPoints"),
                         tableOutput("statsTable")
-                        ))
+                 ))
       ),
       tabPanel("Charts", 
                fluidRow(
                  splitLayout(cellWidths = c("25%", "25%", "25%", "25%"),
-                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart")),
-                 box(title = "Number of Tornadoes with Magnitude", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("magTornadoLineChart")),
-                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("distanceLineChart")),
-                 box(title = "15 Worst Counties for Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("CountiesLineChart"))
+                             box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("numTornadoLineChart")),
+                             box(title = "Number of Tornadoes with Magnitude", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("magTornadoLineChart")),
+                             box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("distanceLineChart")),
+                             box(title = "15 Worst Counties for Tornadoes", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("CountiesLineChart"))
                  ) 
-              ),
-              fluidRow(
-                splitLayout(cellWidths = c("33%", "33%", "33%"),
-                            box(title = "Number of Fatalities", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart")),
-                            box(title = "Loss in US Dollar", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart")),
-                            box(title = "Number of Injuries", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
-                ) 
-              )
+               ),
+               fluidRow(
+                 splitLayout(cellWidths = c("33%", "33%", "33%"),
+                             box(title = "Number of Fatalities", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("fatalitiesLineChart")),
+                             box(title = "Loss in US Dollar", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("lossLineChart")),
+                             box(title = "Number of Injuries", solidHeader = TRUE, status = "primary", width = 12, plotlyOutput("injuryLineChart"))
+                 ) 
+               )
       ),
       tabPanel("Tables", 
                fluidRow(
                  splitLayout(cellWidths = c("20%", "20%", "20%", "20%", "20%"),
-                 box(title = "Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
-                 box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
-                 box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable")),
-                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable")),
-                 box(title = "County Data", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("countiesTable"))
+                             box(title = "Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
+                             box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
+                             box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable")),
+                             box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable")),
+                             box(title = "County Data", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("countiesTable"))
                  )
-                )
-              ),
+               )
+      ),
       
       tabPanel("State Compare", 
                fluidRow(
@@ -221,31 +221,31 @@ ui <- dashboardPage(
                         h4("Illinois:"),
                         selectInput("Illinois", "Illinois:",c("Illinois"))
                         #tableOutput("fatalitiesInjuriesLossTable")
-                      
+                        
                  ),
-               column(width = 4, alight = "center",
+                 column(width = 4, alight = "center",
                         h4("Choose a State:"),
-                      selectInput("stateChoice", "Choose a State:", c("Alaska" = 'AK', "Alabama" = "AL", "Arkansas" = "AR", "Arizona" = "AZ", "California" = "CA",
-                                                                      "Colorado" = "CO", "Connecticut" = "CT", "Delaware" = "DE", "Florida" = "FL", "Georgia" = "GA",
-                                                                      "Hawaii" = "HI", "Iowa" = "IA", "Idaho" = "ID", "Indiana" = "IN", "Kansas" = "KA",
-                                                                      "Kentucky" = "KY", "Lousiana" = "LA", "Massachusettes" ="MA", "Maryland" = "MD",
-                                                                      "Maine" = "ME", "Michigan" = "MI", "Minnesota" = "MN", "Missouri" = "MI", "Mississippi" = "MS",
-                                                                      "Montana" = "MT", "North Carolina" = "NC", "North Dakota" = "ND", "Nebraska" = "NE",
-                                                                      "New Hampshire" = "NH", "New Jersey" = "NJ", "New Mexico" = "NM", "Nevada" = "NV", 
-                                                                      "New York" = "NY", "Ohio" = "OH", "Oklahoma" = "OK", "Oregon" = "OR", "Pennsylvania" = "PA",
-                                                                      "Rhode Island" = "RI", "South Carolina" = "SC", "South Dakota" = "SD", "Tennessee" = "TN",
-                                                                      "Texas" = "TX", "Utah" = "UT", "Virginia" = "VA", "Vermont" = "VT", "Washington" = "WA", 
-                                                                      "Wisconson" = "WI", "West Virginia" = "WV", "Wyoming" = "WY"))
+                        selectInput("stateChoice", "Choose a State:", c("Alaska" = 'AK', "Alabama" = "AL", "Arkansas" = "AR", "Arizona" = "AZ", "California" = "CA",
+                                                                        "Colorado" = "CO", "Connecticut" = "CT", "Delaware" = "DE", "Florida" = "FL", "Georgia" = "GA",
+                                                                        "Hawaii" = "HI", "Iowa" = "IA", "Idaho" = "ID", "Indiana" = "IN", "Kansas" = "KA",
+                                                                        "Kentucky" = "KY", "Lousiana" = "LA", "Massachusettes" ="MA", "Maryland" = "MD",
+                                                                        "Maine" = "ME", "Michigan" = "MI", "Minnesota" = "MN", "Missouri" = "MI", "Mississippi" = "MS",
+                                                                        "Montana" = "MT", "North Carolina" = "NC", "North Dakota" = "ND", "Nebraska" = "NE",
+                                                                        "New Hampshire" = "NH", "New Jersey" = "NJ", "New Mexico" = "NM", "Nevada" = "NV", 
+                                                                        "New York" = "NY", "Ohio" = "OH", "Oklahoma" = "OK", "Oregon" = "OR", "Pennsylvania" = "PA",
+                                                                        "Rhode Island" = "RI", "South Carolina" = "SC", "South Dakota" = "SD", "Tennessee" = "TN",
+                                                                        "Texas" = "TX", "Utah" = "UT", "Virginia" = "VA", "Vermont" = "VT", "Washington" = "WA", 
+                                                                        "Wisconson" = "WI", "West Virginia" = "WV", "Wyoming" = "WY"))
+                 )
                )
-               )
-      
+               
       )
     )
   ) # end dashboardBody
 ) # end dashBoardPage
 
 server <- function(input, output) { 
-
+  
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
@@ -336,39 +336,44 @@ server <- function(input, output) {
   statsValuesForTable <- reactive({
     
     tempData <- filteredData()
-  
+    
     # width
     meanWidth = format(round(mean(tempData$Width),2), nsmall = 2, big.mark = ",")
     medianWidth = format(round(median(tempData$Width),2), nsmall = 2, big.mark = ",")
     modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2, big.mark = ",")
+    totalWidth <- format(sum(tempData$Width))
     
     # length
     meanLength = format(round(mean(tempData$Length),2), nsmall = 2, big.mark = ",")
     medianLength = format(round(median(tempData$Length),2), nsmall = 2, big.mark = ",")
     modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2, big.mark = ",")
+    totalLength <- format(sum(tempData$Length))
     
     # injuries
     meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2, big.mark = ",")
-      
+    totalInjuries <- format(sum(tempData$Injuries))
+    
     # fatalities
     meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
+    totalFatalities <- format(sum(tempData$Fatalities))
     
     # loss
     meanLoss = format(round(mean(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     medianLoss = format(round(median(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     modeLoss <- format(round(Mode(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
-      
+    totalLoss <- format(sum(tempData$Loss))
+    
     data.frame(
       Variable = c("Loss",
                    "Width",
                    "Length",
                    "Injuries",
                    "Fatalities"
-                   ),
+      ),
       
       Mean = as.character(c(
         meanLoss,
@@ -377,7 +382,7 @@ server <- function(input, output) {
         meanInjuries,
         meanFatalities
       )),
-    
+      
       Median = as.character(c(
         medianLoss,
         medianWidth,
@@ -385,15 +390,23 @@ server <- function(input, output) {
         medianInjuries,
         medianFatalities
       )),
-    
+      
       Mode = as.character(c(
         modeLoss,
         modeWidth,
         modeLength,
         modeInjuries,
         modeFatalities
-      )), stringsAsFactors = FALSE)
-      
+      )),
+      Total = as.character(c(
+        totalLoss,
+        totalWidth,
+        totalLength,
+        totalInjuries,
+        totalFatalities
+      )),
+      stringsAsFactors = FALSE)
+    
   })
   
   numDataPoints <- reactive({
@@ -512,39 +525,39 @@ server <- function(input, output) {
     #mag$distance <- mag$Date
     test <- c()
     for(i in 1:nrow(mag)){
-                            #Lat +                    Long -
+      #Lat +                    Long -
       temp <- sqrt((mag[i, c(8)]-41.87)^2+(mag[i, c(9)]+87.62)^2)
       if(measurementSetting() == 1){
-      mag$Distance <- (temp*69)
+        mag$Distance <- (temp*69)
       }
       else{
         mag$Distance <- ((temp*69)*1.60934)
       }
-        test <- rbind(test, mag[i,])
-
+      test <- rbind(test, mag[i,])
+      
     }
     
     tmp <- c()
     if(measurementSetting() == 1){
-    tmp$one <- as.data.frame(table(test$Distance < 50))
-    tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
-    tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
-    tmp$two <- tmp$two[-c(1),]
-    tmp$three <- as.data.frame(table(test$Distance >= 100 & test$Distance <=149.999999))
-    tmp$three <- tmp$three[-c(1),]
-    tmp$four <- as.data.frame(table(test$Distance >= 150 & test$Distance <=199.9999999))
-    tmp$four <- tmp$four[-c(1),]
-    tmp$five <- as.data.frame(table(test$Distance >= 200 & test$Distance <= 249.999999))
-    tmp$five <- tmp$five[-c(1),]
-    tmp$six <- as.data.frame(table(test$Distance >= 250 & test$Distance <= 299.999999))
-    tmp$six <- tmp$six[-c(1),]
-    tmp$seven <- as.data.frame(table(test$Distance >=300 & test$Distance <= 349.999999))
-    tmp$seven <- tmp$seven[-c(1),]
-    tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
-    tmp$eight <-tmp$eight[-c(1),]
-    Final <- c()
-    Final <- data.frame(x = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
-    colnames(Final) <- c('Distance (Miles)', 'Number of Tornadoes')
+      tmp$one <- as.data.frame(table(test$Distance < 50))
+      tmp$one <- tmp$one[-c(1),] #delete the row we dont want to use
+      tmp$two <-as.data.frame(table(test$Distance >= 50 & test$Distance <=99.9999999))
+      tmp$two <- tmp$two[-c(1),]
+      tmp$three <- as.data.frame(table(test$Distance >= 100 & test$Distance <=149.999999))
+      tmp$three <- tmp$three[-c(1),]
+      tmp$four <- as.data.frame(table(test$Distance >= 150 & test$Distance <=199.9999999))
+      tmp$four <- tmp$four[-c(1),]
+      tmp$five <- as.data.frame(table(test$Distance >= 200 & test$Distance <= 249.999999))
+      tmp$five <- tmp$five[-c(1),]
+      tmp$six <- as.data.frame(table(test$Distance >= 250 & test$Distance <= 299.999999))
+      tmp$six <- tmp$six[-c(1),]
+      tmp$seven <- as.data.frame(table(test$Distance >=300 & test$Distance <= 349.999999))
+      tmp$seven <- tmp$seven[-c(1),]
+      tmp$eight <- as.data.frame(table(test$Distance >=350 & test$Distance <= 5000))
+      tmp$eight <-tmp$eight[-c(1),]
+      Final <- c()
+      Final <- data.frame(x = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350'), y = c(tmp$one$Freq, tmp$two$Freq, tmp$three$Freq, tmp$four$Freq, tmp$five$Freq, tmp$six$Freq, tmp$seven$Freq, tmp$eight$Freq))
+      colnames(Final) <- c('Distance (Miles)', 'Number of Tornadoes')
     }
     else{
       tmp$one <- as.data.frame(table(test$Distance < 75))
@@ -618,7 +631,7 @@ server <- function(input, output) {
   
   #Counties most hit by tornados
   output$countiesTable <- DT::renderDataTable({
-
+    
     county <- data
     colnames(county)[14] <- "FIPS.County"
     county <- full_join(county, fips, by = 'FIPS.County')
@@ -626,7 +639,7 @@ server <- function(input, output) {
     colnames(countySum) <- c("County", "Number of Tornadoes")
     DT::datatable(countySum, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
- 
+  
   
   # chart showing the fatalities for each year/month/hour
   output$fatalitiesLineChart <- renderPlotly({
@@ -956,8 +969,8 @@ server <- function(input, output) {
         mag <- mag[order(mag$Hour),]
         mag$Hour <- format(strptime(mag$Hour, "%H"), '%I %p')
         dat <- data.frame(mag)
-       
-         finalChart <- plot_ly(dat, x=~dat$Hour, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
+        
+        finalChart <- plot_ly(dat, x=~dat$Hour, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
           add_trace(y = ~dat$M2, name = "Magnitude 2") %>%
           add_trace(y = ~dat$M3, name = "Magnitude 3") %>%
           add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
@@ -1036,10 +1049,10 @@ server <- function(input, output) {
     
     dat <- data.frame(Final) 
     if(measurementSetting() == 1){
-    finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
-      layout(xaxis = list(title = "Distance From Chicago (Miles)", categoryorder = "array",
-                          categoryarray = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350')), 
-                          yaxis = list (title = "Number of Tornadoes"))}
+      finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
+        layout(xaxis = list(title = "Distance From Chicago (Miles)", categoryorder = "array",
+                            categoryarray = c('<50', '50-99.99', '100-149.99', '150-199.99', '200-249.99', '250-299.99', '300-349.99', '>350')), 
+               yaxis = list (title = "Number of Tornadoes"))}
     else{
       finalChart <-   plot_ly(dat, x = ~dat$Distance, y = ~dat$Number.of.Tornadoes, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis = list(title = "Distance From Chicago (Kilometers", categoryorder = "array",
@@ -1061,7 +1074,7 @@ server <- function(input, output) {
       layout(xaxis = list(title = "County", categoryorder = "array", categoryarray = c(dat$County.Name)), yaxis = list (title = "Number of Tornadoes"))
     finalChart
   })
-
+  
   
   # Leaflet map for all tornadoes
   # Need to add init markers
@@ -1083,7 +1096,7 @@ server <- function(input, output) {
       }
       
     } else if (magnitudeChoice() == -2)  {
-
+      
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(top10)){
