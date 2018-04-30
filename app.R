@@ -187,9 +187,14 @@ ui <- dashboardPage(
                                     min = 0, max = 33,
                                     value = c(0,33))
                  ),
-                 
+                 #Playback slider for map
                  column(width = 4, align = "center",
-                        
+                        checkboxInput('playback', 'Yearly Playback', value = FALSE),
+                        sliderInput("yearlyPlayback", "Year:",
+                                    min = 1950, max = 2016,
+                                    value = 1950, step = 1,
+                                    sep = ",",
+                                    animate = TRUE),
                         h4("Stats:"),
                         textOutput("numberDataPoints"),
                         tableOutput("statsTable")
@@ -284,8 +289,16 @@ server <- function(input, output) {
     input$ymhOption
   })
   
+  getPlayback <- reactive ({
+    input$playback
+  })
+  
   getState <- reactive ({
     input$stateChoice
+  })
+  
+  getYearPlay <- reactive ({
+    input$yearlyPlayback
   })
   
   # Values for min/max for Length
@@ -1430,6 +1443,9 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
+      if(getPlayback() == TRUE){
+        map1 <- dplyr:: filter(map1, format(as.POSIXct(map1$Date, format="%Y-%m-%d"),"%Y") == getYearPlay())
+      }
       if(countyChoice() != -1){
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
       }
@@ -1456,6 +1472,9 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
+      if(getPlayback() == TRUE){
+        map1 <- dplyr:: filter(map1, format(as.POSIXct(map1$Date, format="%Y-%m-%d"),"%Y") == getYearPlay())
+      }
       if(countyChoice() != -1){
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
       }
