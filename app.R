@@ -17,6 +17,7 @@ library(lubridate)
 library(dplyr)
 library(leaflet)
 
+
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
@@ -137,14 +138,6 @@ ui <- dashboardPage(
                      'Metric' = 0)             
       ),
       
-      selectInput("year","Year",c("All" = -1, "1950" = 1950, "1951" = 1951, "1952" = 1952, "1953" = 1953, "1954" = 1954, "1955" = 1955, "1956" = 1956, "1957" = 1957, "1958" = 1956, "1959" = 1959, 
-                                  "1960" = 1960, "1961" = 1961, "1962" = 1962, "1963" = 1963, "1964" = 1964, "1965" = 1965, "1966" = 1966, "1967" = 1967, "1968" = 1968, "1969" = 1969,
-                                  "1970" = 1970, "1971" = 1971, "1972" = 1972, "1973" = 1973, "1974" = 1974, "1975" = 1975, "1976" = 1976, "1977" = 1977, "1978" = 1978, "1979" = 1979,
-                                  "1980" = 1980, "1981" = 1981, "1982" = 1982, "1983" = 1983, "1984" = 1984, "1985" = 1985, "1986" = 1986, "1987" = 1987, "1988" = 1988, "1989" = 1989,
-                                  "1990" = 1990, "1991" = 1991, "1992" = 1992, "1993" = 1993, "1994" = 1994, "1995" = 1995, "1996" = 1996, "1997" = 1997, "1998" = 1998, "1999" = 1999,
-                                  "2000" = 2000, "2001" = 2001, "2002" = 2002, "2003" = 2003, "2004" = 2004, "2005" = 2005, "2006" = 2006, "2007" = 2007, "2008" = 2008, "2009" = 2009,
-                                  "2010" = 2010, "2011" = 2011, "2012" = 2012, "2013" = 2013, "2014" = 2014, "2015" = 2015, "2016" = 2016)),
-      
       menuItem("About", icon = icon("question-circle"), href = "http://cjanow3.people.uic.edu/project3.html")
     ) # end sidebarMenu
   ), # end dashboardSidebar
@@ -186,6 +179,7 @@ ui <- dashboardPage(
                         sliderInput("fatalities", "",step = 1,
                                     min = 0, max = 33,
                                     value = c(0,33))
+                        
                  ),
                  #Playback slider for map
                  column(width = 4, align = "center",
@@ -197,11 +191,8 @@ ui <- dashboardPage(
                                     animate = TRUE),
                         h4("Stats:"),
                         textOutput("numberDataPoints"),
-                        tableOutput("statsTable")
-                 )),
-               fluidRow(
-                 column(width = 4, align = "center",
-                        h1("County", align = "center"),
+                        tableOutput("statsTable"),
+                        h4("County", align = "center"),
                         selectInput("county","",c("All"= -1, "Adams" = 1, "Alexander" = 3, "Bond" = 5, "Boone" = 7, "Brown" = 9, "Bureau" = 11, "Calhoun" = 13,
                                                   "Carroll" = 15, "Cass" = 17, "Champaign" = 19, "Christian" = 21, "Clark"= 23, "Clay" = 25, "Clinton" = 27,
                                                   "Coles" = 29, "Cook" = 31, "Crawford" = 33, "Cumberland" = 35,  "DeKalb" = 37, "DeWitt" = 39, "Douglas" = 41,
@@ -217,8 +208,7 @@ ui <- dashboardPage(
                                                   "Shelby" = 173, "St. Clair" = 163, "Stark" = 175, "Stephenson" = 177, "Tazewell" = 179, "Union" = 181, "Vermilion" = 183,
                                                   "Wabash" = 185, "Warren" = 187, "Washingtom" = 189, "Wayne" = 191, "White" = 193, "Whiteside" = 195, "Will" = 197,
                                                   "Williamson" = 199, "Winnebago" = 201, "Woodford" = 203)
-                        )
-                 ))
+                 )))
       ),
       tabPanel("Charts", 
                fluidRow(
@@ -419,31 +409,31 @@ server <- function(input, output) {
     meanWidth = format(round(mean(tempData$Width),2), nsmall = 2, big.mark = ",")
     medianWidth = format(round(median(tempData$Width),2), nsmall = 2, big.mark = ",")
     modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2, big.mark = ",")
-    totalWidth <- format(sum(tempData$Width))
+    totalWidth <- format(round(sum(tempData$Width),2), nsmall = 2, big.mark = ",")
     
     # length
     meanLength = format(round(mean(tempData$Length),2), nsmall = 2, big.mark = ",")
     medianLength = format(round(median(tempData$Length),2), nsmall = 2, big.mark = ",")
     modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2, big.mark = ",")
-    totalLength <- format(sum(tempData$Length))
+    totalLength <- format(round(sum(tempData$Length),2), nsmall = 2, big.mark = ",")
     
     # injuries
     meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2, big.mark = ",")
-    totalInjuries <- format(sum(tempData$Injuries))
+    totalInjuries <- format(round(sum(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     
     # fatalities
     meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
-    totalFatalities <- format(sum(tempData$Fatalities))
+    totalFatalities <- format(round(sum(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     
     # loss
     meanLoss = format(round(mean(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     medianLoss = format(round(median(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     modeLoss <- format(round(Mode(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
-    totalLoss <- format(sum(tempData$Loss))
+    totalLoss <- format(round(sum(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     
     data.frame(
       Variable = c("Loss",
@@ -570,6 +560,8 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
       magTab <- distinct(mag)
     }
     
@@ -663,6 +655,9 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
+    
       magTab <- distinct(mag)
     }
     
@@ -705,7 +700,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       colnames(numTor) <- c("Hour","Number of Tornadoes")
       
@@ -717,6 +712,8 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       colnames(numTor) <- c("Month","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
@@ -802,6 +799,8 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
       magTab <- distinct(mag)
     }
     
@@ -844,7 +843,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       colnames(numTor) <- c("Hour","Number of Tornadoes")
       
@@ -856,6 +855,8 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       colnames(numTor) <- c("Month","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
@@ -953,7 +954,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       colnames(numTor) <- c("Hour","Number of Tornadoes")
       
@@ -965,6 +966,8 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       colnames(numTor) <- c("Month","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
@@ -1239,14 +1242,15 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
-      
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       dat <- data.frame(numTor)
       
       finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis = list(title = "Month", 
                             tickangle = 45, 
                             categoryorder = "array", 
-                            categoryarray = c(numTor$Month)),
+                            categoryarray =numTorArray),
                yaxis=list(title="Count"))
     }
     
@@ -1287,6 +1291,8 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
       dat <- data.frame(mag)
       
       finalChart <- plot_ly(dat, x=~dat$Month, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
@@ -1295,7 +1301,8 @@ server <- function(input, output) {
         add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
         add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
         add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-        layout(xaxis=list(title = "Month", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
+        layout(xaxis=list(title = "Month", tickangle =45,categoryorder = "array", categoryarray = c(mag$Month)), 
+               yaxis = list (title = "Magnitude"),barmode = "stack")
     }
     
     if(ymhChoice() == "Hourly"){
@@ -1434,6 +1441,15 @@ server <- function(input, output) {
   # Leaflet map for all tornadoes
   # Need to add init markers
   output$map <- renderLeaflet({
+    m <- leaflet::leaflet() %>% 
+      # Add two tiles
+      addProviderTiles("Esri.WorldImagery", group="Natural") %>%
+      addProviderTiles("Esri.NatGeoWorldMap", group="NatGeo") %>%
+      addProviderTiles("OpenTopoMap", group="Topography") %>%
+      addProviderTiles("OpenStreetMap.BlackAndWhite", group="Grayscale") %>%
+      addTiles(options = providerTileOptions(noWrap = TRUE), group="Street") %>% 
+      addLayersControl(baseGroups = c("Natural","NatGeo","Topography","Grayscale","Street"), options = layersControlOptions(collapsed = TRUE))
+      
     
     # -1 means show all tornadoes
     if (magnitudeChoice() == -1){
@@ -1449,16 +1465,13 @@ server <- function(input, output) {
       if(countyChoice() != -1){
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
       }
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
+      
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
       
     } else if (magnitudeChoice() == -2)  {
       
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
       for(i in 1:nrow(top10)){
         m <- leaflet::addPolylines(m, lat = as.numeric(top10[i, c(8, 10)]), lng = as.numeric(top10[i, c(9, 11)]))
       }
@@ -1478,17 +1491,12 @@ server <- function(input, output) {
       if(countyChoice() != -1){
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
       }
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
+
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
     }
-    
-    
-    # Maps the tornado touch down in hopes to counteract
-    # Long and Lat values of 0 which end up in Africa
-    #m <- addMarkers(m, lat = map2$`Start Lat`, lng = map2$`Start Lon`)
+
     m
   })
 }
