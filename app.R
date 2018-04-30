@@ -34,6 +34,7 @@ data$Date <- as.Date(data$Date, "%m/%d/%y")
 # Some dates were converting to dates that haven't happened...
 # Solution is if date is past today, it should be 19XX instead of 20XX
 data$Date <- as.Date(ifelse(data$Date > "2017-12-31", format(data$Date, "19%y-%m-%d"), format(data$Date)))
+stateData <- data
 data <- dplyr::filter(data, data$State == "IL")
 
 data2<- data
@@ -92,6 +93,7 @@ for(row in 1:nrow(data2)){
 data$Loss <- tmp$Loss
 rm(data2)
 rm(tmp)
+
 
 # Save data in RData file
 saveRDS(data, "data.rds")
@@ -194,6 +196,31 @@ ui <- dashboardPage(
                  box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
                  ) 
               )
+      ),
+      tabPanel("State Compare", 
+               fluidRow(
+                 column(width = 4, align = "center",
+                        h4("Illinois:"),
+                        selectInput("Illinois", "Illinois:",c("Illinois"))
+                        #tableOutput("fatalitiesInjuriesLossTable")
+                      
+                 ),
+               column(width = 4, alight = "center",
+                        h4("Choose a State:"),
+                      selectInput("stateChoice", "Choose a State:", c("Alaska" = 'AK', "Alabama" = "AL", "Arkansas" = "AR", "Arizona" = "AZ", "California" = "CA",
+                                                                      "Colorado" = "CO", "Connecticut" = "CT", "Delaware" = "DE", "Florida" = "FL", "Georgia" = "GA",
+                                                                      "Hawaii" = "HI", "Iowa" = "IA", "Idaho" = "ID", "Indiana" = "IN", "Kansas" = "KA",
+                                                                      "Kentucky" = "KY", "Lousiana" = "LA", "Massachusettes" ="MA", "Maryland" = "MD",
+                                                                      "Maine" = "ME", "Michigan" = "MI", "Minnesota" = "MN", "Missouri" = "MI", "Mississippi" = "MS",
+                                                                      "Montana" = "MT", "North Carolina" = "NC", "North Dakota" = "ND", "Nebraska" = "NE",
+                                                                      "New Hampshire" = "NH", "New Jersey" = "NJ", "New Mexico" = "NM", "Nevada" = "NV", 
+                                                                      "New York" = "NY", "Ohio" = "OH", "Oklahoma" = "OK", "Oregon" = "OR", "Pennsylvania" = "PA",
+                                                                      "Rhode Island" = "RI", "South Carolina" = "SC", "South Dakota" = "SD", "Tennessee" = "TN",
+                                                                      "Texas" = "TX", "Utah" = "UT", "Virginia" = "VA", "Vermont" = "VT", "Washington" = "WA", 
+                                                                      "Wisconson" = "WI", "West Virginia" = "WV", "Wyoming" = "WY"))
+               )
+               )
+      
       )
     )
   ) # end dashboardBody
@@ -579,7 +606,7 @@ server <- function(input, output) {
     
     DT::datatable(countiesTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
-  
+ 
   
   # chart showing the fatalities for each year/month/hour
   output$fatalitiesLineChart <- renderPlotly({
