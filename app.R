@@ -17,6 +17,7 @@ library(lubridate)
 library(dplyr)
 library(leaflet)
 
+
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
@@ -186,24 +187,15 @@ ui <- dashboardPage(
                         sliderInput("fatalities", "",step = 1,
                                     min = 0, max = 33,
                                     value = c(0,33))
+                        
                  ),
                  
                  column(width = 4, align = "center",
                         
-                        h4("Stats"),
+                        h4("Stats:"),
                         textOutput("numberDataPoints"),
-<<<<<<< HEAD
                         tableOutput("statsTable"),
-                        h4("Map Type"),
-                        selectInput("mapChoice","",
-                                    c("Default" = 0,"Toner" = 1, "Weather" = 2, "NatGeo" = 3, "Positron" = 4))
-                        ))
-=======
-                        tableOutput("statsTable")
-                 )),
-               fluidRow(
-                 column(width = 4, align = "center",
-                        h1("County", align = "center"),
+                        h4("County", align = "center"),
                         selectInput("county","",c("All"= -1, "Adams" = 1, "Alexander" = 3, "Bond" = 5, "Boone" = 7, "Brown" = 9, "Bureau" = 11, "Calhoun" = 13,
                                                   "Carroll" = 15, "Cass" = 17, "Champaign" = 19, "Christian" = 21, "Clark"= 23, "Clay" = 25, "Clinton" = 27,
                                                   "Coles" = 29, "Cook" = 31, "Crawford" = 33, "Cumberland" = 35,  "DeKalb" = 37, "DeWitt" = 39, "Douglas" = 41,
@@ -219,9 +211,7 @@ ui <- dashboardPage(
                                                   "Shelby" = 173, "St. Clair" = 163, "Stark" = 175, "Stephenson" = 177, "Tazewell" = 179, "Union" = 181, "Vermilion" = 183,
                                                   "Wabash" = 185, "Warren" = 187, "Washingtom" = 189, "Wayne" = 191, "White" = 193, "Whiteside" = 195, "Will" = 197,
                                                   "Williamson" = 199, "Winnebago" = 201, "Woodford" = 203)
-                        )
-                 ))
->>>>>>> a11573b998700b11d0e6a8efff491b3b6a458188
+                 )))
       ),
       tabPanel("Charts", 
                fluidRow(
@@ -345,10 +335,6 @@ server <- function(input, output) {
     input$magnitudeLvl
   })
   
-  mapChoice <- reactive ({
-    input$mapChoice
-  })
-  
   hourSetting <- reactive ({
     input$hours
   })
@@ -418,31 +404,31 @@ server <- function(input, output) {
     meanWidth = format(round(mean(tempData$Width),2), nsmall = 2, big.mark = ",")
     medianWidth = format(round(median(tempData$Width),2), nsmall = 2, big.mark = ",")
     modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2, big.mark = ",")
-    totalWidth <- format(sum(tempData$Width))
+    totalWidth <- format(round(sum(tempData$Width),2), nsmall = 2, big.mark = ",")
     
     # length
     meanLength = format(round(mean(tempData$Length),2), nsmall = 2, big.mark = ",")
     medianLength = format(round(median(tempData$Length),2), nsmall = 2, big.mark = ",")
     modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2, big.mark = ",")
-    totalLength <- format(sum(tempData$Length))
+    totalLength <- format(round(sum(tempData$Length),2), nsmall = 2, big.mark = ",")
     
     # injuries
     meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2, big.mark = ",")
-    totalInjuries <- format(sum(tempData$Injuries))
+    totalInjuries <- format(round(sum(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     
     # fatalities
     meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
-    totalFatalities <- format(sum(tempData$Fatalities))
+    totalFatalities <- format(round(sum(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     
     # loss
     meanLoss = format(round(mean(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     medianLoss = format(round(median(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     modeLoss <- format(round(Mode(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
-    totalLoss <- format(sum(tempData$Loss))
+    totalLoss <- format(round(sum(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     
     data.frame(
       Variable = c("Loss",
@@ -1433,13 +1419,16 @@ server <- function(input, output) {
   # Leaflet map for all tornadoes
   # Need to add init markers
   output$map <- renderLeaflet({
+    m <- leaflet::leaflet() %>% 
+      # Add two tiles
+      addProviderTiles("Esri.WorldImagery", group="Natural") %>%
+      addProviderTiles("Esri.NatGeoWorldMap", group="NatGeo") %>%
+      addProviderTiles("OpenTopoMap", group="Topography") %>%
+      addProviderTiles("OpenStreetMap.BlackAndWhite", group="Grayscale") %>%
+      addTiles(options = providerTileOptions(noWrap = TRUE), group="Street") %>% 
+      addLayersControl(baseGroups = c("Natural","NatGeo","Topography","Grayscale","Street"), options = layersControlOptions(collapsed = TRUE))
+      
     
-    m <- leaflet::leaflet()
-    # c("Default" = 0,"Toner" = 1, "Weather" = 2, "NatGeo" = 3, "Positron" = 4))
-    m <- leaflet::addTiles(m)
-    
-    
-        
     # -1 means show all tornadoes
     if (magnitudeChoice() == -1){
       map1 <- dplyr::filter(data, data$"End Lon" != 0 &
@@ -1448,33 +1437,27 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
-<<<<<<< HEAD
-      #
-      #  m <- leaflet::leaflet() %>% 
-      # addProviderTiles(providers$Stamen.TonerLite,
-      #                 options = providerTileOptions(noWrap = TRUE))
-      #
-      
-
-=======
       if(countyChoice() != -1){
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
       }
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
->>>>>>> a11573b998700b11d0e6a8efff491b3b6a458188
+      
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
       
-    } else if (magnitudeChoice() == -2)  {
-<<<<<<< HEAD
-
-=======
+      #m <- addFlows(
+      #  lng0 = map1$"Start Lon", lat0 = map1$"Start Lat", lng1 = map1$"End Lon", lat1= map1$"End Lat",
+      #  map = m,
+      #  dir = NULL,
+      #  time = map1$Date,
+      #  minThickness = 1,
+      #  maxThickness = 1
+      #)
       
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
->>>>>>> a11573b998700b11d0e6a8efff491b3b6a458188
+
+      
+    } else if (magnitudeChoice() == -2)  {
+      
       for(i in 1:nrow(top10)){
         m <- leaflet::addPolylines(m, lat = as.numeric(top10[i, c(8, 10)]), lng = as.numeric(top10[i, c(9, 11)]))
       }
@@ -1488,24 +1471,15 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
-<<<<<<< HEAD
-
-=======
       if(countyChoice() != -1){
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
       }
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
->>>>>>> a11573b998700b11d0e6a8efff491b3b6a458188
+
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
     }
-    
-    
-    # Maps the tornado touch down in hopes to counteract
-    # Long and Lat values of 0 which end up in Africa
-    #m <- addMarkers(m, lat = map2$`Start Lat`, lng = map2$`Start Lon`)
+
     m
   })
 }
