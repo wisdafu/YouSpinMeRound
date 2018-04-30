@@ -183,7 +183,10 @@ ui <- dashboardPage(
                         
                         h4("Stats"),
                         textOutput("numberDataPoints"),
-                        tableOutput("statsTable")
+                        tableOutput("statsTable"),
+                        h4("Map Type"),
+                        selectInput("mapChoice","",
+                                    c("Default" = 0,"Toner" = 1, "Weather" = 2, "NatGeo" = 3, "Positron" = 4))
                         ))
       ),
       tabPanel("Charts", 
@@ -298,6 +301,10 @@ server <- function(input, output) {
   
   magnitudeChoice <- reactive ({
     input$magnitudeLvl
+  })
+  
+  mapChoice <- reactive ({
+    input$mapChoice
   })
   
   hourSetting <- reactive ({
@@ -1067,6 +1074,12 @@ server <- function(input, output) {
   # Need to add init markers
   output$map <- renderLeaflet({
     
+    m <- leaflet::leaflet()
+    # c("Default" = 0,"Toner" = 1, "Weather" = 2, "NatGeo" = 3, "Positron" = 4))
+    m <- leaflet::addTiles(m)
+    
+    
+        
     # -1 means show all tornadoes
     if (magnitudeChoice() == -1){
       map1 <- dplyr::filter(data, data$"End Lon" != 0 &
@@ -1075,17 +1088,19 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
+      #
+      #  m <- leaflet::leaflet() %>% 
+      # addProviderTiles(providers$Stamen.TonerLite,
+      #                 options = providerTileOptions(noWrap = TRUE))
+      #
       
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
+
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
       
     } else if (magnitudeChoice() == -2)  {
 
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
       for(i in 1:nrow(top10)){
         m <- leaflet::addPolylines(m, lat = as.numeric(top10[i, c(8, 10)]), lng = as.numeric(top10[i, c(9, 11)]))
       }
@@ -1098,8 +1113,7 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
-      m <- leaflet::leaflet()
-      m <- leaflet::addTiles(m)
+
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
