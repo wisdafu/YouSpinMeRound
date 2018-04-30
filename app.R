@@ -406,8 +406,7 @@ server <- function(input, output) {
         totalFatalities
       )),
       stringsAsFactors = FALSE)
-    
-  })
+    })
   
   numDataPoints <- reactive({
     
