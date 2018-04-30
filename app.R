@@ -99,6 +99,21 @@ saveRDS(data, "data.rds")
 # Example - Load RData file
 # tempData <- readRDS("data.rds")
 
+# create top 10 data
+top10 <- data[ which(
+    (data$Loss == 25000000 & data$Width == 200 & data$Length == 15 & data$Injuries == 500 & data$Fatalities == 33)   | 
+    (data$Loss == 250000 & data$Width == 1200 & data$Length == 25.5 & data$Injuries == 450 & data$Fatalities == 24)   |
+    (data$Loss == 935225000 & data$Width == 880 & data$Length == 46.36 & data$Injuries == 125 & data$Fatalities == 3) |
+    (data$Loss == 250000 & data$Width == 600 & data$Length == 16.4 & data$Injuries == 350 & data$Fatalities == 29)    |
+    (data$Loss == 25000000 & data$Width == 300 & data$Length == 28.3 & data$Injuries == 200 & data$Fatalities == 11) |
+    (data$Loss == 250000000 & data$Width == 400 & data$Length == 17 & data$Injuries == 181 & data$Fatalities == 10)   |
+    (data$Loss == 25000000 & data$Width == 2630 & data$Length == 14 & data$Injuries == 69 & data$Fatalities == 2)    |
+    (data$Loss == 2000000 & data$Width == 325 & data$Length == 26.09 & data$Injuries == 108 & data$Fatalities == 8)   |
+    (data$Loss == 25000000 & data$Width == 120 & data$Length == 35.9 & data$Injuries == 90 & data$Fatalities == 2)    |
+    (data$Loss == 25000000 & data$Width == 150 & data$Length == 8.80 & data$Injuries == 100 & data$Fatalities == 1)
+  ) , ]
+
+
 # Shiny Dashboard
 ui <- dashboardPage(
   dashboardHeader(title = "Project 3"),
@@ -135,23 +150,24 @@ ui <- dashboardPage(
                  h1("Filters", align = "center"),
                   
                  column(width = 4, align = "center",
-                        
-                        h4("Magnitude"),
-                               selectInput("magnitudeLvl", "",
-                                c("All" = -1 ,"0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),
+                        h4("Loss"),
+                        splitLayout(numericInput("minLoss", label = "min", value = 0, min = 0, max = 1000000000),
+                                    numericInput("maxLoss", label = "max", value = 1000000000, min = 0, max = 1000000000)),
                         h4("Width (yd)"),
                                splitLayout(numericInput("minWidth", label = "min", value = 0, min = 0, max = 2630),
                                            numericInput("maxWidth", label = "max", value = 2630, min = 0, max = 2630)),
                         h4("Length (mi)"),
                                splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 157),
                                            numericInput("maxLength", label = "max", value = 157, min = 0, max = 157))
-                               ),
+                        ),
                         
+                 
                  column(width = 4, align = "center",
-                               h4("Loss"),
-                               splitLayout(numericInput("minLoss", label = "min", value = 0, min = 0, max = 1000000000),
-                                    numericInput("maxLoss", label = "max", value = 1000000000, min = 0, max = 1000000000)),
-                               h4("Injuries"),
+                        h4("Magnitude/Top 10 destructive"),
+                        selectInput("magnitudeLvl", "",
+                                    c("All" = -1 , "Top 10 destructive" = -2, "0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),       
+                       
+                         h4("Injuries"),
                                sliderInput("injuries", "",step = 5,
                                            min = 0, max = 500,
                                            value = c(0,500)),
@@ -273,6 +289,8 @@ server <- function(input, output) {
                                   data$Loss >= minLoss() & data$Loss <= maxLoss())
       
       
+    } else if (magnitudeChoice() == -2) {
+      tempData <- top10
     } else {
       tempData <- dplyr::filter(data, data$"End Lon" != 0 & 
                                   data$Magnitude == magnitudeChoice() &
@@ -1034,6 +1052,15 @@ server <- function(input, output) {
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
+      
+    } else if (magnitudeChoice() == -2)  {
+
+      m <- leaflet::leaflet()
+      m <- leaflet::addTiles(m)
+      for(i in 1:nrow(top10)){
+        m <- leaflet::addPolylines(m, lat = as.numeric(top10[i, c(8, 10)]), lng = as.numeric(top10[i, c(9, 11)]))
+      }
+      
     } else {
       map1 <- dplyr::filter(data, data$"End Lon" != 0 & 
                               data$Magnitude == magnitudeChoice() &
