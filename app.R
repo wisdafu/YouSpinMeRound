@@ -365,9 +365,17 @@ server <- function(input, output) {
       if(countyChoice() != -1){
         tempData <- dplyr::filter(tempData, tempData$F1 == countyChoice())
       }
+      if(measurementSetting() == 0){
+        tempData$Width <- tempData$Width * 0.914
+        tempData$Length <- tempData$Length * 1.60934
+      }
       
     } else if (magnitudeChoice() == -2) {
       tempData <- top10
+      if(measurementSetting() == 0){
+        tempData$Width <- tempData$Width * 0.914
+        tempData$Length <- tempData$Length * 1.60934
+      }
     } else {
       tempData <- dplyr::filter(data, data$"End Lon" != 0 & 
                                   data$Magnitude == magnitudeChoice() &
@@ -378,6 +386,10 @@ server <- function(input, output) {
                                   data$Loss >= minLoss() & data$Loss <= maxLoss())
       if(countyChoice() != -1){
         tempData <- dplyr::filter(tempData, tempData$F1 == countyChoice())
+      }
+      if(measurementSetting() == 0){
+        tempData$Width <- tempData$Width * 0.914
+        tempData$Length <- tempData$Length * 1.60934
       }
     }
     
