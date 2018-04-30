@@ -10,10 +10,8 @@
 # Import libraries
 library(shiny)
 library(shinydashboard)
-library(ggplot2)
 library(DT)
 library(plotly)
-library(lubridate)
 library(dplyr)
 library(leaflet)
 
@@ -1443,12 +1441,12 @@ server <- function(input, output) {
   output$map <- renderLeaflet({
     m <- leaflet::leaflet() %>% 
       # Add two tiles
+      addTiles(options = providerTileOptions(noWrap = TRUE), group="Street") %>% 
       addProviderTiles("Esri.WorldImagery", group="Natural") %>%
       addProviderTiles("Esri.NatGeoWorldMap", group="NatGeo") %>%
       addProviderTiles("OpenTopoMap", group="Topography") %>%
       addProviderTiles("OpenStreetMap.BlackAndWhite", group="Grayscale") %>%
-      addTiles(options = providerTileOptions(noWrap = TRUE), group="Street") %>% 
-      addLayersControl(baseGroups = c("Natural","NatGeo","Topography","Grayscale","Street"), options = layersControlOptions(collapsed = TRUE))
+      addLayersControl(baseGroups = c("Street", "Natural","NatGeo","Topography","Grayscale"), options = layersControlOptions(collapsed = TRUE))
       
     
     # -1 means show all tornadoes
