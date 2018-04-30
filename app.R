@@ -184,7 +184,27 @@ ui <- dashboardPage(
                         h4("Stats:"),
                         textOutput("numberDataPoints"),
                         tableOutput("statsTable")
-                        ))
+                        )),
+               fluidRow(
+                 column(width = 4, align = "center",
+                 h1("County", align = "center"),
+                 selectInput("county","",c("All"= -1, "Adams" = 1, "Alexander" = 3, "Bond" = 5, "Boone" = 7, "Brown" = 9, "Bureau" = 11, "Calhoun" = 13,
+                                           "Carroll" = 15, "Cass" = 17, "Champaign" = 19, "Christian" = 21, "Clark"= 23, "Clay" = 25, "Clinton" = 27,
+                                           "Coles" = 29, "Cook" = 31, "Crawford" = 33, "Cumberland" = 35,  "DeKalb" = 37, "DeWitt" = 39, "Douglas" = 41,
+                                           "DuPage" = 43, "Edgar" = 45, "Edwards" = 47, "Effingham" = 49, "Fayette" = 51, "Ford" = 53, "Franklin" = 55,
+                                           "Fulton" = 57, "Gallatin" = 59, "Greene" = 61, "Grundy" = 63, "Hamilton" = 65, "Hancock" = 67, "Hardin" = 69,
+                                           "Henderson" = 71, "Henry" = 73, "Iroquois" = 75, "Jackson" = 77, "Jasper" = 79, "Jefferson" = 81, "Jersey" = 83,
+                                           "Jo Daviess" = 85, "Johnson" = 87, "Kane" = 89, "Kankakee" = 91, "Kendall" = 93, "Knox" = 95, "Lake" = 97,
+                                           "Lasalle" = 99, "Lawrence" = 101, "Lee" = 103, "Livingston" = 105, "Logan" = 107, "Macon" = 115, "Macoupin" = 117,
+                                           "Madison" = 119, "Marion" = 121, "Marshall" = 123, "Mason" = 125, "Massac" = 127, "McDonough" = 109, "McHenry" = 111,
+                                           "McLean" = 113, "Menard" = 129, "Mercer" = 131, "Monroe" = 133, "Montgomery" = 135, "Morgan" = 137, "Moultrie" = 139,
+                                           "Ogle" = 141, "Peoria" = 143, "Perry" = 145, "Piatt" = 147, "Pike" = 149, "Pope" = 151, "Pulaski" = 153, "Putnam" = 155,
+                                           "Randolph" = 157, "Richland" = 159, "Rock Island" = 161, "Saline" = 165, "Sangamon" = 167, "Schuyler" = 169, "Scott" = 171,
+                                           "Shelby" = 173, "St. Clair" = 163, "Stark" = 175, "Stephenson" = 177, "Tazewell" = 179, "Union" = 181, "Vermilion" = 183,
+                                           "Wabash" = 185, "Warren" = 187, "Washingtom" = 189, "Wayne" = 191, "White" = 193, "Whiteside" = 195, "Will" = 197,
+                                           "Williamson" = 199, "Winnebago" = 201, "Woodford" = 203)
+               )
+               ))
       ),
       tabPanel("Charts", 
                fluidRow(
@@ -308,7 +328,12 @@ server <- function(input, output) {
     input$measurement
   })
   
+  countyChoice <- reactive ({
+    input$county
+  })
+  
   filteredData <- reactive({
+  
     if (magnitudeChoice() == -1) {
       tempData <- dplyr::filter(data, data$"End Lon" != 0 &
                                   data$Length >= minLength() & data$Length <= maxLength() &
@@ -316,7 +341,9 @@ server <- function(input, output) {
                                   data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                                   data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                                   data$Loss >= minLoss() & data$Loss <= maxLoss())
-      
+      if(countyChoice() != -1){
+       tempData <- dplyr::filter(tempData, tempData$F1 == countyChoice())
+      }
       
     } else if (magnitudeChoice() == -2) {
       tempData <- top10
@@ -328,7 +355,12 @@ server <- function(input, output) {
                                   data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                                   data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                                   data$Loss >= minLoss() & data$Loss <= maxLoss())
+      if(countyChoice() != -1){
+      tempData <- dplyr::filter(tempData, tempData$F1 == countyChoice())
+      }
     }
+    
+   
     tempData
   })
   
@@ -1088,7 +1120,9 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
-      
+      if(countyChoice() != -1){
+        map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
+      }
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
@@ -1103,6 +1137,7 @@ server <- function(input, output) {
         m <- leaflet::addPolylines(m, lat = as.numeric(top10[i, c(8, 10)]), lng = as.numeric(top10[i, c(9, 11)]))
       }
       
+      
     } else {
       map1 <- dplyr::filter(data, data$"End Lon" != 0 & 
                               data$Magnitude == magnitudeChoice() &
@@ -1111,6 +1146,9 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
+      if(countyChoice() != -1){
+        map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
+      }
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
