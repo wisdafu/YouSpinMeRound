@@ -341,26 +341,31 @@ server <- function(input, output) {
     meanWidth = format(round(mean(tempData$Width),2), nsmall = 2, big.mark = ",")
     medianWidth = format(round(median(tempData$Width),2), nsmall = 2, big.mark = ",")
     modeWidth <- format(round(Mode(tempData$Width),2), nsmall = 2, big.mark = ",")
+    totalWidth <- format(sum(tempData$Width))
     
     # length
     meanLength = format(round(mean(tempData$Length),2), nsmall = 2, big.mark = ",")
     medianLength = format(round(median(tempData$Length),2), nsmall = 2, big.mark = ",")
     modeLength <- format(round(Mode(tempData$Length),2), nsmall = 2, big.mark = ",")
+    totalLength <- format(sum(tempData$Length))
     
     # injuries
     meanInjuries = format(round(mean(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2, big.mark = ",")
+    totalInjuries <- format(sum(tempData$Injuries))
       
     # fatalities
     meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     modeFatalities <- format(round(Mode(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
+    totalFatalities <- format(sum(tempData$Fatalities))
     
     # loss
     meanLoss = format(round(mean(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     medianLoss = format(round(median(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     modeLoss <- format(round(Mode(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
+    totalLoss <- format(sum(tempData$Loss))
       
     data.frame(
       Variable = c("Loss",
@@ -392,7 +397,15 @@ server <- function(input, output) {
         modeLength,
         modeInjuries,
         modeFatalities
-      )), stringsAsFactors = FALSE)
+      )),
+      Total = as.character(c(
+        totalLoss,
+        totalWidth,
+        totalLength,
+        totalInjuries,
+        totalFatalities
+      )),
+      stringsAsFactors = FALSE)
       
   })
   
