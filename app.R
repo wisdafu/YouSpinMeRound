@@ -184,6 +184,26 @@ ui <- dashboardPage(
                         h4("Stats:"),
                         textOutput("numberDataPoints"),
                         tableOutput("statsTable")
+                 )),
+               fluidRow(
+                 column(width = 4, align = "center",
+                        h1("County", align = "center"),
+                        selectInput("county","",c("All"= -1, "Adams" = 1, "Alexander" = 3, "Bond" = 5, "Boone" = 7, "Brown" = 9, "Bureau" = 11, "Calhoun" = 13,
+                                                  "Carroll" = 15, "Cass" = 17, "Champaign" = 19, "Christian" = 21, "Clark"= 23, "Clay" = 25, "Clinton" = 27,
+                                                  "Coles" = 29, "Cook" = 31, "Crawford" = 33, "Cumberland" = 35,  "DeKalb" = 37, "DeWitt" = 39, "Douglas" = 41,
+                                                  "DuPage" = 43, "Edgar" = 45, "Edwards" = 47, "Effingham" = 49, "Fayette" = 51, "Ford" = 53, "Franklin" = 55,
+                                                  "Fulton" = 57, "Gallatin" = 59, "Greene" = 61, "Grundy" = 63, "Hamilton" = 65, "Hancock" = 67, "Hardin" = 69,
+                                                  "Henderson" = 71, "Henry" = 73, "Iroquois" = 75, "Jackson" = 77, "Jasper" = 79, "Jefferson" = 81, "Jersey" = 83,
+                                                  "Jo Daviess" = 85, "Johnson" = 87, "Kane" = 89, "Kankakee" = 91, "Kendall" = 93, "Knox" = 95, "Lake" = 97,
+                                                  "Lasalle" = 99, "Lawrence" = 101, "Lee" = 103, "Livingston" = 105, "Logan" = 107, "Macon" = 115, "Macoupin" = 117,
+                                                  "Madison" = 119, "Marion" = 121, "Marshall" = 123, "Mason" = 125, "Massac" = 127, "McDonough" = 109, "McHenry" = 111,
+                                                  "McLean" = 113, "Menard" = 129, "Mercer" = 131, "Monroe" = 133, "Montgomery" = 135, "Morgan" = 137, "Moultrie" = 139,
+                                                  "Ogle" = 141, "Peoria" = 143, "Perry" = 145, "Piatt" = 147, "Pike" = 149, "Pope" = 151, "Pulaski" = 153, "Putnam" = 155,
+                                                  "Randolph" = 157, "Richland" = 159, "Rock Island" = 161, "Saline" = 165, "Sangamon" = 167, "Schuyler" = 169, "Scott" = 171,
+                                                  "Shelby" = 173, "St. Clair" = 163, "Stark" = 175, "Stephenson" = 177, "Tazewell" = 179, "Union" = 181, "Vermilion" = 183,
+                                                  "Wabash" = 185, "Warren" = 187, "Washingtom" = 189, "Wayne" = 191, "White" = 193, "Whiteside" = 195, "Will" = 197,
+                                                  "Williamson" = 199, "Winnebago" = 201, "Woodford" = 203)
+                        )
                  ))
       ),
       tabPanel("Charts", 
@@ -219,9 +239,10 @@ ui <- dashboardPage(
                fluidRow(
                  column(width = 4, align = "center",
                         h4("Illinois:"),
-                        selectInput("Illinois", "Illinois:",c("Illinois"))
-                        #tableOutput("fatalitiesInjuriesLossTable")
-                        
+                        selectInput("Illinois", "Illinois:",c("Illinois")),
+                        box(title = "IL Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("ILFatTable")),
+                        box(title = "IL Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("ILMagTable")),
+                        box(title = "IL Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("ILTornadoTable"))
                  ),
                  column(width = 4, alight = "center",
                         h4("Choose a State:"),
@@ -235,7 +256,10 @@ ui <- dashboardPage(
                                                                         "New York" = "NY", "Ohio" = "OH", "Oklahoma" = "OK", "Oregon" = "OR", "Pennsylvania" = "PA",
                                                                         "Rhode Island" = "RI", "South Carolina" = "SC", "South Dakota" = "SD", "Tennessee" = "TN",
                                                                         "Texas" = "TX", "Utah" = "UT", "Virginia" = "VA", "Vermont" = "VT", "Washington" = "WA", 
-                                                                        "Wisconson" = "WI", "West Virginia" = "WV", "Wyoming" = "WY"))
+                                                                        "Wisconson" = "WI", "West Virginia" = "WV", "Wyoming" = "WY")),
+                        box(title = "Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("stateFatTable")),
+                        box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("stateMagTable")),
+                        box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("stateTornadoTable"))
                  )
                )
                
@@ -249,6 +273,10 @@ server <- function(input, output) {
   # Focus on hourly/monthly/yearly data
   ymhChoice <- reactive ({
     input$ymhOption
+  })
+  
+  getState <- reactive ({
+    input$stateChoice
   })
   
   # Values for min/max for Length
@@ -308,7 +336,12 @@ server <- function(input, output) {
     input$measurement
   })
   
+  countyChoice <- reactive ({
+    input$county
+  })
+  
   filteredData <- reactive({
+    
     if (magnitudeChoice() == -1) {
       tempData <- dplyr::filter(data, data$"End Lon" != 0 &
                                   data$Length >= minLength() & data$Length <= maxLength() &
@@ -316,7 +349,9 @@ server <- function(input, output) {
                                   data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                                   data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                                   data$Loss >= minLoss() & data$Loss <= maxLoss())
-      
+      if(countyChoice() != -1){
+        tempData <- dplyr::filter(tempData, tempData$F1 == countyChoice())
+      }
       
     } else if (magnitudeChoice() == -2) {
       tempData <- top10
@@ -328,7 +363,12 @@ server <- function(input, output) {
                                   data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                                   data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                                   data$Loss >= minLoss() & data$Loss <= maxLoss())
+      if(countyChoice() != -1){
+        tempData <- dplyr::filter(tempData, tempData$F1 == countyChoice())
+      }
     }
+    
+    
     tempData
   })
   
@@ -406,7 +446,8 @@ server <- function(input, output) {
         totalFatalities
       )),
       stringsAsFactors = FALSE)
-    })
+    
+  })
   
   numDataPoints <- reactive({
     
@@ -516,6 +557,283 @@ server <- function(input, output) {
     }
     
     DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  output$ILFatTable <- DT::renderDataTable({
+    
+    if(ymhChoice() == "Yearly") {
+      fatYear <- data
+      fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
+      fatYear <- group_by(fatYear, Year)
+      fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
+      fatYear <- mutate(fatYear, Injuries = sum(Injuries))
+      fatYear <- mutate(fatYear, Loss = sum(Loss))
+      fatYear <- select(fatYear, Year, Fatalities, Injuries, Loss)
+      
+      finalTable <- distinct(fatYear)
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      fatMonth <- data
+      fatMonth$Month <- format(as.POSIXct(fatMonth$Date, format="%Y-%m-%d"),"%b")
+      fatMonth <- group_by(fatMonth, Month)
+      fatMonth <- mutate(fatMonth, Fatalities = sum(Fatalities))
+      fatMonth <- mutate(fatMonth, Injuries = sum(Injuries))
+      fatMonth <- mutate(fatMonth, Loss = sum(Loss))
+      fatMonth <- select(fatMonth, Month, Fatalities, Injuries, Loss)
+      factor(fatMonth$Month, month.abb, ordered=TRUE)
+      finalTable <- distinct(fatMonth)
+    }
+    
+    if(ymhChoice() == "Hourly") {
+      fatHour <- data
+      fatHour$Hour <- factor(fatHour$Time)
+      if(hourSetting() == 12){
+        fatHour$Hour <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+      }else{
+        fatHour$Hour24 <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+        fatHour$Hour <- format(strptime(fatHour$Time,"%H:%M:%S"), '%I %p')
+      }
+      fatHour <- group_by(fatHour, Hour)
+      fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
+      fatHour <- mutate(fatHour, Injuries = sum(Injuries))
+      fatHour <- mutate(fatHour, Loss = sum(Loss))
+      if(hourSetting() == 12){
+        fatHour <- fatHour[order(fatHour$Hour),]
+      }else{
+        fatHour <- fatHour[order(fatHour$Hour24),]
+      }
+      fatHour <- select(fatHour, Hour, Fatalities, Injuries, Loss)
+      fatHour <- distinct(fatHour)
+      finalTable <- distinct(fatHour)
+    }
+    
+    DT::datatable(finalTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  output$ILMagTable <- DT::renderDataTable({
+    mag <- data
+    
+    if(ymhChoice() == "Yearly"){
+      mag$Year <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%Y")
+      mag <- group_by(mag, Year)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      magTab <- distinct(mag)
+    }
+    
+    if(ymhChoice() == "Monthly"){
+      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
+      mag <- group_by(mag, Month)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      magTab <- distinct(mag)
+    }
+    
+    if(ymhChoice() == "Hourly"){
+      mag <- data
+      mag$Hour <- factor(mag$Time)
+      
+      if(hourSetting() == 12){
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+      }else{
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag$Hour12 <- format(strptime(mag$Time,"%H:%M:%S"), '%I %p')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+        mag$Hour <- format(strptime(mag$Hour, "%H"), '%I %p')
+      }
+      
+      magTab <- distinct(mag)
+    }
+    
+    DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  output$ILTornadoTable <- DT::renderDataTable({
+    if(ymhChoice() == "Hourly") {
+      numTor <- data
+      numTor$Hour <- factor(numTor$Time)
+      numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      }else{
+        numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
+      }
+      numTor <- group_by(numTor, Hour)
+      numTor <- as.data.frame(table(numTor$Hour24))
+      if(hourSetting() == 12){
+        numTor <- numTor[order(numTor$Var1),]
+      }else{
+        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+      }
+      colnames(numTor) <- c("Hour","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      numTor <- data
+      numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
+      numTor$Month <- factor(numTor$Month)
+      numTor <- as.data.frame(table(numTor$Month))
+      colnames(numTor) <- c("Month","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    if(ymhChoice() == "Yearly") {
+      
+      numTor <- data
+      numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
+      numTor$Month <- factor(numTor$Year)
+      numTor <- as.data.frame(table(numTor$Year))
+      colnames(numTor) <- c("Year","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    DT::datatable(numTornadoTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  output$stateFatTable <- DT::renderDataTable({
+    
+    if(ymhChoice() == "Yearly") {
+      fatYear <- dplyr::filter(stateData, stateData$State == getState())
+      fatYear$Year <- format(as.POSIXct(fatYear$Date, format="%Y-%m-%d"),"%Y")
+      fatYear <- group_by(fatYear, Year)
+      fatYear <- mutate(fatYear, Fatalities = sum(Fatalities))
+      fatYear <- mutate(fatYear, Injuries = sum(Injuries))
+      fatYear <- mutate(fatYear, Loss = sum(Loss))
+      fatYear <- select(fatYear, Year, Fatalities, Injuries, Loss)
+      
+      finalTable <- distinct(fatYear)
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      fatMonth <- dplyr::filter(stateData, stateData$State == getState())
+      fatMonth$Month <- format(as.POSIXct(fatMonth$Date, format="%Y-%m-%d"),"%b")
+      fatMonth <- group_by(fatMonth, Month)
+      fatMonth <- mutate(fatMonth, Fatalities = sum(Fatalities))
+      fatMonth <- mutate(fatMonth, Injuries = sum(Injuries))
+      fatMonth <- mutate(fatMonth, Loss = sum(Loss))
+      fatMonth <- select(fatMonth, Month, Fatalities, Injuries, Loss)
+      factor(fatMonth$Month, month.abb, ordered=TRUE)
+      finalTable <- distinct(fatMonth)
+    }
+    
+    if(ymhChoice() == "Hourly") {
+      fatHour <- dplyr::filter(stateData, stateData$State == getState())
+      fatHour$Hour <- factor(fatHour$Time)
+      if(hourSetting() == 12){
+        fatHour$Hour <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+      }else{
+        fatHour$Hour24 <- format(strptime(fatHour$Hour, "%H:%M:%S"),'%H')
+        fatHour$Hour <- format(strptime(fatHour$Time,"%H:%M:%S"), '%I %p')
+      }
+      fatHour <- group_by(fatHour, Hour)
+      fatHour <- mutate(fatHour, Fatalities = sum(Fatalities))
+      fatHour <- mutate(fatHour, Injuries = sum(Injuries))
+      fatHour <- mutate(fatHour, Loss = sum(Loss))
+      if(hourSetting() == 12){
+        fatHour <- fatHour[order(fatHour$Hour),]
+      }else{
+        fatHour <- fatHour[order(fatHour$Hour24),]
+      }
+      fatHour <- select(fatHour, Hour, Fatalities, Injuries, Loss)
+      fatHour <- distinct(fatHour)
+      finalTable <- distinct(fatHour)
+    }
+    
+    DT::datatable(finalTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  output$stateMagTable <- DT::renderDataTable({
+    mag <- dplyr::filter(stateData, stateData$State == getState())
+    
+    if(ymhChoice() == "Yearly"){
+      mag$Year <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%Y")
+      mag <- group_by(mag, Year)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      magTab <- distinct(mag)
+    }
+    
+    if(ymhChoice() == "Monthly"){
+      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
+      mag <- group_by(mag, Month)
+      mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      magTab <- distinct(mag)
+    }
+    
+    if(ymhChoice() == "Hourly"){
+      mag <- data
+      mag$Hour <- factor(mag$Time)
+      
+      if(hourSetting() == 12){
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+      }else{
+        mag$Hour <- format(strptime(mag$Hour, "%H:%M:%S"),'%H')
+        mag$Hour12 <- format(strptime(mag$Time,"%H:%M:%S"), '%I %p')
+        mag <- group_by(mag, Hour)
+        mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+        mag <- mag[order(mag$Hour),]
+        mag$Hour <- format(strptime(mag$Hour, "%H"), '%I %p')
+      }
+      
+      magTab <- distinct(mag)
+    }
+    
+    DT::datatable(magTab, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+  })
+  
+  output$stateTornadoTable <- DT::renderDataTable({
+    if(ymhChoice() == "Hourly") {
+      numTor <- dplyr::filter(stateData, stateData$State == getState())
+      numTor$Hour <- factor(numTor$Time)
+      numTor$Hour24 <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      if(hourSetting() == 12){
+        numTor$Hour <- format(strptime(numTor$Hour, "%H:%M:%S"),'%H')
+      }else{
+        numTor$Hour <- format(strptime(numTor$Time,"%H:%M:%S"), '%I %p')
+      }
+      numTor <- group_by(numTor, Hour)
+      numTor <- as.data.frame(table(numTor$Hour24))
+      if(hourSetting() == 12){
+        numTor <- numTor[order(numTor$Var1),]
+      }else{
+        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+      }
+      colnames(numTor) <- c("Hour","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    if(ymhChoice() == "Monthly") {
+      numTor <- dplyr::filter(stateData, stateData$State == getState())
+      numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
+      numTor$Month <- factor(numTor$Month)
+      numTor <- as.data.frame(table(numTor$Month))
+      colnames(numTor) <- c("Month","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    if(ymhChoice() == "Yearly") {
+      numTor <- dplyr::filter(stateData, stateData$State == getState())
+      numTor$Year <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%Y")
+      numTor$Month <- factor(numTor$Year)
+      numTor <- as.data.frame(table(numTor$Year))
+      colnames(numTor) <- c("Year","Number of Tornadoes")
+      
+      numTornadoTable <- distinct(numTor)
+    }
+    
+    DT::datatable(numTornadoTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
   
   #Distance from Chicago
@@ -1087,7 +1405,9 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
-      
+      if(countyChoice() != -1){
+        map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
+      }
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
@@ -1102,6 +1422,7 @@ server <- function(input, output) {
         m <- leaflet::addPolylines(m, lat = as.numeric(top10[i, c(8, 10)]), lng = as.numeric(top10[i, c(9, 11)]))
       }
       
+      
     } else {
       map1 <- dplyr::filter(data, data$"End Lon" != 0 & 
                               data$Magnitude == magnitudeChoice() &
@@ -1110,6 +1431,9 @@ server <- function(input, output) {
                               data$Injuries >= minInjury() & data$Injuries <= maxInjury() &
                               data$Fatalities >= minFatal() & data$Fatalities <= maxFatal() &
                               data$Loss >= minLoss() & data$Loss <= maxLoss())
+      if(countyChoice() != -1){
+        map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
+      }
       m <- leaflet::leaflet()
       m <- leaflet::addTiles(m)
       for(i in 1:nrow(map1)){
