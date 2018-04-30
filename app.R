@@ -555,6 +555,8 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
       magTab <- distinct(mag)
     }
     
@@ -648,6 +650,9 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
+    
       magTab <- distinct(mag)
     }
     
@@ -690,7 +695,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       colnames(numTor) <- c("Hour","Number of Tornadoes")
       
@@ -702,6 +707,8 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       colnames(numTor) <- c("Month","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
@@ -787,6 +794,8 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
       magTab <- distinct(mag)
     }
     
@@ -829,7 +838,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       colnames(numTor) <- c("Hour","Number of Tornadoes")
       
@@ -841,6 +850,8 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       colnames(numTor) <- c("Month","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
@@ -938,7 +949,7 @@ server <- function(input, output) {
       if(hourSetting() == 12){
         numTor <- numTor[order(numTor$Var1),]
       }else{
-        numTor$Var1 <- format(strptime(num$Var1, '%H'), '%I %p')
+        numTor$Var1 <- format(strptime(numTor$Var1, '%H'), '%I %p')
       }
       colnames(numTor) <- c("Hour","Number of Tornadoes")
       
@@ -950,6 +961,8 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       colnames(numTor) <- c("Month","Number of Tornadoes")
       
       numTornadoTable <- distinct(numTor)
@@ -1224,14 +1237,15 @@ server <- function(input, output) {
       numTor$Month <- format(as.POSIXct(numTor$Date, format="%Y-%m-%d"),"%b")
       numTor$Month <- factor(numTor$Month)
       numTor <- as.data.frame(table(numTor$Month))
-      
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      numTor <- numTor[match(numTorArray, numTor$Var1),]
       dat <- data.frame(numTor)
       
       finalChart <- plot_ly(dat, x = ~dat$Var1, y = ~dat$Freq, name = "Number of Tornadoes", type = "scatter", mode = "lines") %>%
         layout(xaxis = list(title = "Month", 
                             tickangle = 45, 
                             categoryorder = "array", 
-                            categoryarray = c(numTor$Month)),
+                            categoryarray =numTorArray),
                yaxis=list(title="Count"))
     }
     
@@ -1272,6 +1286,8 @@ server <- function(input, output) {
       mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
+      numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
+      mag <- mag[match(numTorArray, mag$Month),]
       dat <- data.frame(mag)
       
       finalChart <- plot_ly(dat, x=~dat$Month, y =~dat$M1, name = "Magnitude 1", type = "bar") %>%
@@ -1280,7 +1296,8 @@ server <- function(input, output) {
         add_trace(y = ~dat$M4, name = "Magnitude 4") %>%
         add_trace(y = ~dat$M5, name = "Magnitude 5") %>%
         add_trace(y = ~dat$M0, name = "Magnitude Unknown") %>%
-        layout(xaxis=list(title = "Month", tickangle =45), yaxis = list (title = "Magnitude"),barmode = "stack")
+        layout(xaxis=list(title = "Month", tickangle =45,categoryorder = "array", categoryarray = c(mag$Month)), 
+               yaxis = list (title = "Magnitude"),barmode = "stack")
     }
     
     if(ymhChoice() == "Hourly"){
