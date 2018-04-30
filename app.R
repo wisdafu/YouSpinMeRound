@@ -205,14 +205,16 @@ ui <- dashboardPage(
       ),
       tabPanel("Tables", 
                fluidRow(
-                 splitLayout(cellWidths = c("25%", "25%", "25%", "25%"),
+                 splitLayout(cellWidths = c("20%", "20%", "20%", "20%", "20%"),
                  box(title = "Fatalities, Loss in USD, and Injuries", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("fatalitiesInjuriesLossTable")),
                  box(title = "Magnitude", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("magnitudeTable")),
                  box(title = "Number of Tornadoes", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("numTornadoTable")),
-                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable"))
-                 ) 
-              )
-      ),
+                 box(title = "Distance From Chicago", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("distanceTable")),
+                 box(title = "County Data", solidHeader = TRUE, status = "primary", width = 8, dataTableOutput("countiesTable"))
+                 )
+                )
+              ),
+      
       tabPanel("State Compare", 
                fluidRow(
                  column(width = 4, align = "center",
@@ -621,8 +623,8 @@ server <- function(input, output) {
     colnames(county)[14] <- "FIPS.County"
     county <- full_join(county, fips, by = 'FIPS.County')
     countySum <- count(county, County.Name)
-    
-    DT::datatable(countiesTable, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
+    colnames(countySum) <- c("County", "Number of Tornadoes")
+    DT::datatable(countySum, options = list(pageLength = 6, lengthChange = FALSE, searching = FALSE))
   })
  
   
