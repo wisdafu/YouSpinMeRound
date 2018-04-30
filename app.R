@@ -354,11 +354,7 @@ server <- function(input, output) {
     medianInjuries = format(round(median(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     modeInjuries <- format(round(Mode(tempData$Injuries),2), nsmall = 2, big.mark = ",")
     totalInjuries <- format(sum(tempData$Injuries))
-<<<<<<< HEAD
     
-=======
-      
->>>>>>> a4468e08ab0e6b861847b3ed19c29316864f0ee4
     # fatalities
     meanFatalities = format(round(mean(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
     medianFatalities = format(round(median(tempData$Fatalities),2), nsmall = 2, big.mark = ",")
@@ -370,11 +366,7 @@ server <- function(input, output) {
     medianLoss = format(round(median(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     modeLoss <- format(round(Mode(tempData$Loss),2), nsmall = 2, big.mark = ",", scientific = FALSE)
     totalLoss <- format(sum(tempData$Loss))
-<<<<<<< HEAD
     
-=======
-      
->>>>>>> a4468e08ab0e6b861847b3ed19c29316864f0ee4
     data.frame(
       Variable = c("Loss",
                    "Width",
@@ -414,11 +406,7 @@ server <- function(input, output) {
         totalFatalities
       )),
       stringsAsFactors = FALSE)
-<<<<<<< HEAD
     
-=======
-      
->>>>>>> a4468e08ab0e6b861847b3ed19c29316864f0ee4
   })
   
   numDataPoints <- reactive({
