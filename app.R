@@ -181,7 +181,7 @@ ui <- dashboardPage(
                         
                  column(width = 4, align = "center",
                         
-                        h4("Stats:"),
+                        h4("Stats"),
                         textOutput("numberDataPoints"),
                         tableOutput("statsTable")
                         ))
