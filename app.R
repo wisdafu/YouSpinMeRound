@@ -1286,7 +1286,7 @@ server <- function(input, output) {
     }
     
     if(ymhChoice() == "Monthly"){
-      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%m")
+      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
       numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
