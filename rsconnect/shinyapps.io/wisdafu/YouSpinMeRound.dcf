@@ -5,8 +5,8 @@ account: wisdafu
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 324001
-bundleId: 1348524
+bundleId: 1348568
 url: https://wisdafu.shinyapps.io/YouSpinMeRound/
-when: 1525136896.40024
+when: 1525139402.85263
 asMultiple: FALSE
 asStatic: FALSE
