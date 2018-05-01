@@ -1269,7 +1269,7 @@ server <- function(input, output) {
   })
   
   output$magTornadoLineChart <- renderPlotly({
-    mag <- data
+    mag<-data
     if(ymhChoice() == "Yearly"){
       mag$Year <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%Y")
       mag <- group_by(mag, Year)
@@ -1286,14 +1286,14 @@ server <- function(input, output) {
     }
     
     if(ymhChoice() == "Monthly"){
-      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%b")
+      mag$Month <- format(as.POSIXct(mag$Date, format="%Y-%m-%d"),"%m")
       mag <- group_by(mag, Month)
       mag <- summarise(mag, M1 = sum(Magnitude == 1), M2 = sum(Magnitude == 2), M3 = sum(Magnitude == 3), M4 = sum(Magnitude == 4), M5 = sum(Magnitude == 5), M0 = sum(Magnitude == 0))
       numTorArray <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",  "Oct", "Nov", "Dec")
       mag <- mag[match(numTorArray, mag$Month),]
       dat <- data.frame(mag)
       
-      finalChart <-plot_ly(dat, x=~dat$Month, y =~dat$M1, text = ~paste0((signif((dat$M1/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 1", type = "bar") %>%
+      finalChart <- plot_ly(dat, x=~dat$Month, y =~dat$M1, text = ~paste0((signif((dat$M1/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 1", type = "bar") %>%
         add_trace(y = ~dat$M2, text = ~paste0((signif((dat$M2/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 2") %>%
         add_trace(y = ~dat$M3, text = ~paste0((signif((dat$M3/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 3") %>%
         add_trace(y = ~dat$M4, text = ~paste0((signif((dat$M4/(dat$M1+dat$M2+dat$M3+dat$M4+dat$M5+dat$M0)), 2)*100),"%"), name = "Magnitude 4") %>%
