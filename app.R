@@ -192,12 +192,12 @@ ui <- dashboardPage(
                         h4("Loss"),
                         splitLayout(numericInput("minLoss", label = "min", value = 0, min = 0, max = 1000000000),
                                     numericInput("maxLoss", label = "max", value = 1000000000, min = 0, max = 1000000000)),
-                        h4("Width (yd)"),
+                        h4("Width (yd/meter)"),
                         splitLayout(numericInput("minWidth", label = "min", value = 0, min = 0, max = 2630),
                                     numericInput("maxWidth", label = "max", value = 2630, min = 0, max = 2630)),
-                        h4("Length (mi)"),
-                        splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 157),
-                                    numericInput("maxLength", label = "max", value = 157, min = 0, max = 157))
+                        h4("Length (mi/km)"),
+                        splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 253),
+                                    numericInput("maxLength", label = "max", value = 253, min = 0, max = 253))
                  )),
                  
                  #Playback slider for map
@@ -1464,6 +1464,12 @@ server <- function(input, output) {
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
       }
       
+      if(measurementSetting() == 0){
+        map1$Width <- map1$Width * 0.914
+        map1$Length <- map1$Length * 1.60934
+      }
+      
+      
       for(i in 1:nrow(map1)){
         m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
@@ -1472,6 +1478,11 @@ server <- function(input, output) {
       
       for(i in 1:nrow(top10)){
         m <- leaflet::addPolylines(m, lat = as.numeric(top10[i, c(8, 10)]), lng = as.numeric(top10[i, c(9, 11)]))
+      }
+      
+      if(measurementSetting() == 0){
+        map1$Width <- map1$Width * 0.914
+        map1$Length <- map1$Length * 1.60934
       }
       
       
@@ -1488,6 +1499,10 @@ server <- function(input, output) {
       }
       if(countyChoice() != -1){
         map1 <- dplyr::filter(map1, map1$F1 == countyChoice())
+      }
+      if(measurementSetting() == 0){
+        map1$Width <- map1$Width * 0.914
+        map1$Length <- map1$Length * 1.60934
       }
 
       for(i in 1:nrow(map1)){
