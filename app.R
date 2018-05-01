@@ -149,48 +149,31 @@ ui <- dashboardPage(
                             leafletOutput("map", height = 500))
                  )),
                fluidRow(
-                 h1("Filters", align = "center"),
                  
-                 column(width = 4, align = "center",
-                        h4("Loss"),
-                        splitLayout(numericInput("minLoss", label = "min", value = 0, min = 0, max = 1000000000),
-                                    numericInput("maxLoss", label = "max", value = 1000000000, min = 0, max = 1000000000)),
-                        h4("Width (yd)"),
-                        splitLayout(numericInput("minWidth", label = "min", value = 0, min = 0, max = 2630),
-                                    numericInput("maxWidth", label = "max", value = 2630, min = 0, max = 2630)),
-                        h4("Length (mi)"),
-                        splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 157),
-                                    numericInput("maxLength", label = "max", value = 157, min = 0, max = 157))
-                 ),
-                 
-                 
-                 column(width = 4, align = "center",
-                        h4("Magnitude/Top 10 destructive"),
-                        selectInput("magnitudeLvl", "",
-                                    c("All" = -1 , "Top 10 destructive" = -2, "0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),       
-                        
-                        h4("Injuries"),
-                        sliderInput("injuries", "",step = 5,
-                                    min = 0, max = 500,
-                                    value = c(0,500)),
-                        h4("Fatalities"),
-                        sliderInput("fatalities", "",step = 1,
-                                    min = 0, max = 33,
-                                    value = c(0,33))
-                        
-                 ),
-                 #Playback slider for map
-                 column(width = 4, align = "center",
-                        checkboxInput('playback', 'Yearly Playback', value = FALSE),
-                        sliderInput("yearlyPlayback", "Year:",
-                                    min = 1950, max = 2016,
-                                    value = 1950, step = 1,
-                                    sep = ",",
-                                    animate = TRUE),
-                        h4("Stats:"),
-                        textOutput("numberDataPoints"),
-                        tableOutput("statsTable"),
-                        h4("County", align = "center"),
+                 column(width = 8, align = "center",
+                        h1("Filters"),
+                        column(width = 6, align = "center",
+                               h4("Injuries"),
+                               sliderInput("injuries", "",step = 5,
+                                           min = 0, max = 500,
+                                           value = c(0,500)),
+                               h4("Fatalities"),
+                               sliderInput("fatalities", "",step = 1,
+                                           min = 0, max = 33,
+                                           value = c(0,33)),
+                               checkboxInput('playback', 'Yearly Playback', value = FALSE),
+                               sliderInput("yearlyPlayback", "Year:",
+                                           min = 1950, max = 2016,
+                                           value = 1950, step = 1,
+                                           sep = ",",
+                                           animate = TRUE)),
+                        column(width = 6, align = "center",
+                               
+                        splitLayout(h4("Magnitude/Top 10"),
+                                    h4("County", align = "center")),
+
+                        splitLayout(selectInput("magnitudeLvl", "",
+                                    c("All" = -1 , "Top 10 destructive" = -2, "0" = 0, "1" = 1, "2" = 2, "3" = 3, "4"= 4, "5" = 5)),
                         selectInput("county","",c("All"= -1, "Adams" = 1, "Alexander" = 3, "Bond" = 5, "Boone" = 7, "Brown" = 9, "Bureau" = 11, "Calhoun" = 13,
                                                   "Carroll" = 15, "Cass" = 17, "Champaign" = 19, "Christian" = 21, "Clark"= 23, "Clay" = 25, "Clinton" = 27,
                                                   "Coles" = 29, "Cook" = 31, "Crawford" = 33, "Cumberland" = 35,  "DeKalb" = 37, "DeWitt" = 39, "Douglas" = 41,
@@ -205,8 +188,25 @@ ui <- dashboardPage(
                                                   "Randolph" = 157, "Richland" = 159, "Rock Island" = 161, "Saline" = 165, "Sangamon" = 167, "Schuyler" = 169, "Scott" = 171,
                                                   "Shelby" = 173, "St. Clair" = 163, "Stark" = 175, "Stephenson" = 177, "Tazewell" = 179, "Union" = 181, "Vermilion" = 183,
                                                   "Wabash" = 185, "Warren" = 187, "Washingtom" = 189, "Wayne" = 191, "White" = 193, "Whiteside" = 195, "Will" = 197,
-                                                  "Williamson" = 199, "Winnebago" = 201, "Woodford" = 203)
-                 )))
+                                                  "Williamson" = 199, "Winnebago" = 201, "Woodford" = 203))),
+                        h4("Loss"),
+                        splitLayout(numericInput("minLoss", label = "min", value = 0, min = 0, max = 1000000000),
+                                    numericInput("maxLoss", label = "max", value = 1000000000, min = 0, max = 1000000000)),
+                        h4("Width (yd)"),
+                        splitLayout(numericInput("minWidth", label = "min", value = 0, min = 0, max = 2630),
+                                    numericInput("maxWidth", label = "max", value = 2630, min = 0, max = 2630)),
+                        h4("Length (mi)"),
+                        splitLayout(numericInput("minLength", label = "min", value = 0, min = 0, max = 157),
+                                    numericInput("maxLength", label = "max", value = 157, min = 0, max = 157))
+                 )),
+                 
+                 #Playback slider for map
+                 column(width = 4, align = "center",
+                        h1("Stats"),
+                        textOutput("numberDataPoints"),
+                        tableOutput("statsTable")
+                        )
+                 )
       ),
       tabPanel("Charts", 
                fluidRow(
@@ -1491,10 +1491,10 @@ server <- function(input, output) {
       }
 
       for(i in 1:nrow(map1)){
-        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]),
-                                   lng = as.numeric(map1[i, c(9, 11)]))
+        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
       }
     }
+
     m
   })
 }
