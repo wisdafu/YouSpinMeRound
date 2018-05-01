@@ -1491,10 +1491,10 @@ server <- function(input, output) {
       }
 
       for(i in 1:nrow(map1)){
-        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]), lng = as.numeric(map1[i, c(9, 11)]))
+        m <- leaflet::addPolylines(m, lat = as.numeric(map1[i, c(8, 10)]),
+                                   lng = as.numeric(map1[i, c(9, 11)]))
       }
     }
-
     m
   })
 }
