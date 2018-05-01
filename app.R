@@ -145,7 +145,7 @@ ui <- dashboardPage(
       tabPanel("Map", 
                fluidRow(
                  column(width = 12, 
-                        box(title = "Map", width = NULL, solidHeader = TRUE, status = "primary",
+                        box(title = "Map of Illinois Tornadoes", width = NULL, solidHeader = TRUE, status = "primary",
                             leafletOutput("map", height = 500))
                  )),
                fluidRow(
